@@ -8,6 +8,7 @@ import "google/protobuf/timestamp.proto";
 
 service AuthService {
   rpc Login (LoginRequestRPC) returns (LoginSuccessResponseRPC);
+  rpc VerifyAccessToken (VerifyAccessTokenRequestRPC) returns (VerifyAccessTokenResponseRPC);
 }
 
 message LoginRequestRPC {
@@ -36,4 +37,14 @@ message EmployeeDetailRPC {
   string department_name = 12;
   string position_code = 13;
   string position_name = 14;
+}
+
+message VerifyAccessTokenRequestRPC {
+  string token = 1;
+}
+
+message VerifyAccessTokenResponseRPC {
+  int32 employee_id = 1;
+  string username = 2;
+  int64 exp = 3;
 }
