@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var employeeServiceConn *grpc.ClientConn
@@ -19,7 +20,7 @@ func GetEmployeeServiceConn() *grpc.ClientConn {
 func initEmployeeServiceConn() {
 	config := app_config.GetAppConfig().GRPCConnectionConfig
 
-	conn, err := grpc.NewClient(config.EmployeeService)
+	conn, err := grpc.NewClient(config.EmployeeService, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		logger.Fatal("[EmployeeServiceConnInfras] init error", err)
 	}

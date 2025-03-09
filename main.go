@@ -5,6 +5,7 @@ import (
 	"asset_management_backend/cmd"
 	"asset_management_backend/common/logger"
 	"asset_management_backend/infras"
+	authRouter "asset_management_backend/module/auth/router"
 	"log"
 )
 
@@ -22,7 +23,11 @@ func main() {
 	employeeServiceConn := infras.GetEmployeeServiceConn()
 	defer employeeServiceConn.Close()
 
-	fiberAppErr := infras.GetFiberApp().Listen(app_config.GetAppConfig().FiberServerConfig.HttpPort)
+	fiberApp := infras.GetFiberApp()
+
+	authRouter.Setup(fiberApp)
+
+	fiberAppErr := fiberApp.Listen(app_config.GetAppConfig().FiberServerConfig.HttpPort)
 	if fiberAppErr != nil {
 		logger.Fatal("[Main] Failed to start server: " + fiberAppErr.Error())
 	}
