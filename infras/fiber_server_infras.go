@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	fiber_logger "github.com/gofiber/fiber/v2/middleware/logger"
 )
 
@@ -34,5 +35,10 @@ func initFiberApp() {
 	)
 
 	fiberApp.Use(fiberLogger)
+	fiberApp.Use(cors.New(cors.Config{
+		AllowOrigins: "*", // Cho phép tất cả các domain
+		AllowHeaders: "Content-Type, Authorization",
+		AllowMethods: "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
+	}))
 	logger.Info("[ServerInfras] Init Server fiber app")
 }

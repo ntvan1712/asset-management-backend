@@ -1,10 +1,7 @@
 package usecase
 
-import (
-	"asset_management_backend/module/auth/domain/entity"
-	"context"
-)
+import "context"
 
 type AuthUsecase interface {
-	Login(context context.Context, loginRequest entity.LoginRequest) (*entity.LoginSuccessResponseEntity, error)
+	HasUserAuthority(context context.Context, userID int, userAuthority string) (bool, error)
 }

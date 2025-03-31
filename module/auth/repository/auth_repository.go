@@ -6,5 +6,5 @@ import (
 )
 
 type AuthRepository interface {
-	Login(context context.Context, username string, password string) (*entity.LoginSuccessResponseEntity, error)
+	FindUserAuthByID(ctx context.Context, userID int) (*entity.UserAuthEntity, error)
 }

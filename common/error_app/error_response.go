@@ -44,7 +44,7 @@ func PermissionDeniedErrorResponse(message string) *ErrorResponse {
 	return NewErrorResponse(ErrPermissionDenied.Error(), message)
 }
 
-func InvalidJwtTokenErrorResponse(message string) *ErrorResponse {
+func InvalidAccessTokenErrorResponse(message string) *ErrorResponse {
 	return NewErrorResponse(ErrInvalidAccessToken.Error(), message)
 }
 

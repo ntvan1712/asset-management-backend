@@ -1,10 +1,13 @@
 fiber_server:
-  HttpPort: ":8080"
+  HttpPort: ":8081"
   Mode: "Development"
   BodyLimitInKb: 102400
 
 grpc_connection:
   EmployeeService: "127.0.0.1:50051"
+
+postgres:
+  ConnectionString: "postgres://kaido1712:kaido1712@127.0.0.1:5433/asset_management?sslmode=disable&TimeZone=Asia/Ho_Chi_Minh"
 
 logger:
   Development: true
@@ -14,9 +17,6 @@ logger:
   Level: "info"
   SugarType: true
 
-mongodb:
-  ConnectionString: "mongodb+srv://vannguyenthe1712:kaido1712@cluster0.ofixi.mongodb.net/"
-  DbName: "faceswap"
 
 rabbitmq:
   URI: "amqps://asset_server:kaido1712@127.0.0.1:5672/asset_management"
@@ -34,3 +34,7 @@ redis:
   Username: "default"
   Password: "OOH5lf9owZA07XtHBtJsU8JL8se9yief"
   DB: 0
+
+auth: 
+  JwtAccessTokenKeyString: "do_an_tot_nghiep" 
+  JwtAccessTokenExpireTimeInMinutes: 120

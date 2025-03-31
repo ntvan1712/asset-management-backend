@@ -19,6 +19,8 @@ type AppConfig struct {
 	LoggerConfig         LoggerConfig         `mapstructure:"logger"`
 	MinioConfig          MinioConfig          `mapstructure:"minio"`
 	GRPCConnectionConfig GRPCConnectionConfig `mapstructure:"grpc_connection"`
+	PostgresConfig       PostgresConfig       `mapstructure:"postgres"`
+	AuthConfig           AuthConfig           `mapstructure:"auth"`
 }
 
 func GetAppConfig() *AppConfig {

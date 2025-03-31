@@ -5,7 +5,7 @@ import (
 	"asset_management_backend/cmd"
 	"asset_management_backend/common/logger"
 	"asset_management_backend/infras"
-	authRouter "asset_management_backend/module/auth/router"
+	categoryRouter "asset_management_backend/module/category/router"
 	"log"
 )
 
@@ -25,7 +25,7 @@ func main() {
 
 	fiberApp := infras.GetFiberApp()
 
-	authRouter.Setup(fiberApp)
+	categoryRouter.Setup(fiberApp)
 
 	fiberAppErr := fiberApp.Listen(app_config.GetAppConfig().FiberServerConfig.HttpPort)
 	if fiberAppErr != nil {
