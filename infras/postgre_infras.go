@@ -27,6 +27,6 @@ func initDb() {
 
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
 
-	dbInstance = bun.NewDB(sqldb, pgdialect.New())
+	dbInstance = bun.NewDB(sqldb, pgdialect.New(), bun.WithDiscardUnknownColumns())
 	logger.Info("[PostgresInfras] init PostgresDB với Bun")
 }
