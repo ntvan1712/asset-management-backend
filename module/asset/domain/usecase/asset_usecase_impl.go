@@ -20,7 +20,7 @@ func (a *assetUsecaseImpl) GetAssetByID(ctx context.Context, assetID int) (*enti
 // CreateAsset implements AssetUsecase.
 func (a *assetUsecaseImpl) CreateAsset(ctx context.Context, request *entity.CreateAssetRequest) (*entity.AssetEntity, error) {
 	if request.AssetLabelPath == nil {
-		if request.SerialNumber == nil {
+		if request.SerialNumber == nil || *request.SerialNumber == "" {
 			serial := a.assetRepo.GenerateSerialNumber()
 			request.SerialNumber = &serial
 		}

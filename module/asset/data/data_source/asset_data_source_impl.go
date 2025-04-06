@@ -63,10 +63,12 @@ func (a assetDataSourceImpl) Insert(ctx context.Context, newAsset model.Asset) (
 	// Sử dụng Returning để lấy các trường của bản ghi đã được insert
 	_, err := a.dbInstance.NewInsert().Model(&newAsset).Returning("*").Exec(ctx)
 	if err != nil {
+		if error_app.IsUniqueViolation(err) {
+			return nil, error_app.ErrDuplicateKey
+		}
 		return nil, err
 	}
 
-	// Trả về đối tượng mới đã được insert và cập nhật
 	return &newAsset, nil
 }
 

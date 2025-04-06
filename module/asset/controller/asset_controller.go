@@ -35,6 +35,9 @@ func (a *AssetController) CreateAssetHandler(c *fiber.Ctx) error {
 	}
 	response, err := a.assetUsecase.CreateAsset(c.Context(), request)
 	if err != nil {
+		if err == error_app.ErrDuplicateKey {
+			return c.Status(fiber.StatusConflict).JSON(error_app.ConflictErrorResponse("Serial number đã tồn tại"))
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(error_app.InternalServerErrorResponse(err.Error()))
 	}
 	return c.JSON(response)
