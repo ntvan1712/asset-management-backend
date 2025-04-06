@@ -26,4 +26,6 @@ type CategoryUsecase interface {
 	DeleteLocationByID(ctx context.Context, id int) error
 	UpdateLocation(ctx context.Context, id int, updateData map[string]interface{}) error
 	CreateLocation(ctx context.Context, location *entity.LocationEntity) (*entity.LocationEntity, error)
+
+	GetAllCategories(ctx context.Context) (*entity.AllCategoriesEntity, error)
 }

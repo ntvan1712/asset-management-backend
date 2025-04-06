@@ -10,13 +10,16 @@ type Currency struct {
 	bun.BaseModel `bun:"table:currencies"`
 
 	ID     int    `bun:",pk,autoincrement" json:"id"`
-	Code   string `bun:",unique,notnull,type:varchar(50)" json:"code"`
-	Name   string `bun:",notnull,type:varchar(100)" json:"name"`
-	Symbol string `bun:",notnull,type:varchar(10)" json:"symbol"`
+	Code   string `json:"code"`
+	Name   string `json:"name"`
+	Symbol string `json:"symbol"`
 }
 
 
 func (c *Currency) ToEntity() *entity.CurrencyEntity {
+	if c == nil {
+		return nil
+	}
 	return &entity.CurrencyEntity{
 		ID:     c.ID,
 		Code:   c.Code,

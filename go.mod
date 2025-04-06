@@ -7,6 +7,10 @@ toolchain go1.24.1
 require github.com/go-playground/validator/v10 v10.25.0
 
 require (
+	github.com/boombuler/barcode v1.0.2 // indirect
+	github.com/matoous/go-nanoid/v2 v2.1.0 // indirect
+	github.com/oklog/ulid/v2 v2.1.0 // indirect
+	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e // indirect
 	go.opentelemetry.io/otel v1.34.0 // indirect
 	go.opentelemetry.io/otel/trace v1.34.0 // indirect
 	mellium.im/sasl v0.3.2 // indirect

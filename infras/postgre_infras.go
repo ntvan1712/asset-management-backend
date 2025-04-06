@@ -1,8 +1,10 @@
 package infras
 
 import (
+	"context"
 	"database/sql"
 	"sync"
+	"time"
 
 	"asset_management_backend/app_config"
 	"asset_management_backend/common/logger"
@@ -28,5 +30,17 @@ func initDb() {
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
 
 	dbInstance = bun.NewDB(sqldb, pgdialect.New(), bun.WithDiscardUnknownColumns())
+	dbInstance.AddQueryHook(&QueryHook{})
+
 	logger.Info("[PostgresInfras] init PostgresDB với Bun")
+}
+
+type QueryHook struct{}
+
+func (h *QueryHook) BeforeQuery(ctx context.Context, event *bun.QueryEvent) context.Context {
+	return ctx
+}
+
+func (h *QueryHook) AfterQuery(ctx context.Context, event *bun.QueryEvent) {
+	logger.Info("[BunQueryHook]",time.Since(event.StartTime).String(), string(event.Query))
 }

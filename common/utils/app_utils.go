@@ -1,11 +1,11 @@
 package app_utils
 
 import (
+	"asset_management_backend/common/enums"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
-
 	// "com.pegatech.faceswap/common/enums"
 	// "go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -136,4 +136,16 @@ func IsElementOfSlice(slice []string, item string) bool {
         }
     }
     return false
+}
+
+func GetFileTypeByPath(filePath string) string {
+	ext := strings.ToLower(filepath.Ext(filePath))
+	// Kiểm tra xem tệp có phải là ảnh hay video
+	if ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif" || ext == ".bmp" || ext == ".webp" {
+		return enums.FileTypeEnum.Image
+	} else if ext == ".mp4" || ext == ".avi" || ext == ".mkv" || ext == ".mov" || ext == ".flv" || ext == ".wmv" {
+		return  enums.FileTypeEnum.Video
+	}
+
+	return "unknown"
 }

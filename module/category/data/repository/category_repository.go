@@ -26,4 +26,6 @@ type CategoryRepository interface {
 
 	// Currencies
 	FindAllCurrencies(ctx context.Context) ([]entity.CurrencyEntity, error)
+	
+	FindAllCategories(ctx context.Context) (*entity.AllCategoriesEntity, error)
 }

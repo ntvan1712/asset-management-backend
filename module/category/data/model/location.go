@@ -10,11 +10,14 @@ type Location struct {
 	bun.BaseModel `bun:"table:locations"`
 
 	ID          int    `bun:",pk,autoincrement" json:"id"`
-	Name        string `bun:",notnull,type:varchar(100)" json:"name"`
-	Description string `bun:",type:text" json:"description"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 func (l *Location) ToEntity() *entity.LocationEntity {
+	if l == nil {
+		return nil
+	}
 	return &entity.LocationEntity{
 		ID:          l.ID,
 		Name:        l.Name,

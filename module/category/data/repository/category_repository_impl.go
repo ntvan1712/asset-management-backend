@@ -12,6 +12,20 @@ type categoryRepositoryImpl struct {
 	categoryDS datasource.CategoryDataSource
 }
 
+// FindAllCategories implements CategoryRepository.
+func (r *categoryRepositoryImpl) FindAllCategories(ctx context.Context) (*entity.AllCategoriesEntity, error) {
+	allCategoriesModel, err := r.categoryDS.FindAllCategories(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &entity.AllCategoriesEntity{
+		AssetQualities: model.AssetQualityModelsToEntities(allCategoriesModel.AssetQualities),
+		AssetTypes:     model.AssetTypeModelsToEntities(allCategoriesModel.AssetTypes),
+		Locations:      model.LocationModelsToEntities(allCategoriesModel.Locations),
+		Currencies:     model.CurrencyModelsToEntities(allCategoriesModel.Currencies),
+	}, nil
+}
+
 // UpdateAssetQuality implements CategoryRepository.
 func (r *categoryRepositoryImpl) UpdateAssetQuality(ctx context.Context, id int, updateData map[string]interface{}) error {
 	return r.categoryDS.UpdateAssetQuality(ctx, id, updateData)

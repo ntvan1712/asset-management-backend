@@ -12,6 +12,9 @@ func Setup(app *fiber.App) {
 	categoryRoute := app.Group("/api/categories")
 	categoryRoute.Use(middleware.GetAuthMiddleware().CategoryManagementAuthorityMiddleware)
 
+	categoryController := controller.NewCategoryController()
+	categoryRoute.Get("/", categoryController.GetAllHandler)
+
 	assetQualityController := controller.NewAssetQualityController()
 	assetQualityRoute := categoryRoute.Group("/asset-qualities")
 	assetQualityRoute.Get("/", assetQualityController.GetAllHandler)

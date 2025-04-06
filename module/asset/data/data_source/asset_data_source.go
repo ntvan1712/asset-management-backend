@@ -6,7 +6,7 @@ import (
 )
 
 type AssetDataSource interface {
-	Insert(ctx context.Context, newAsset *model.Asset) (*model.Asset, error)
+	Insert(ctx context.Context, newAsset model.Asset) (*model.Asset, error)
 	UpdateByID(ctx context.Context, assetID int, updateData map[string]interface{}) (*model.Asset, error)
 	DeleteByID(ctx context.Context, assetID int) error
 
@@ -19,4 +19,6 @@ type AssetDataSource interface {
 		page int,
 		limit int,
 	) ([]model.Asset, error)
+
+	InsertAssetFiles(ctx context.Context, assetFiles []model.AssetFile) ([]model.AssetFile, error)
 }

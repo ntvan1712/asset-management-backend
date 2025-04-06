@@ -24,9 +24,9 @@ rabbitmq:
   CompletedLabelTaskQueue: "completed_label_task_queue"
 
 minio:
-  Endpoint: "127.0.0.1:9000"
-  AccessKeyID: "GmrlC2mP8bGnpvYZjnym"
-  SecretAccessKey: "spYleTko6ZOm5F7AuWX0gqEEtnnzDWK38EWVmI27"
+  Endpoint: "192.168.1.7:9000"
+  AccessKeyID: "HiTyxWffYGOCQSDexhN9"
+  SecretAccessKey: "V3PfVihk3XSjs0B4fh6Xomo9jEYTqjeAd5WrhSqh"
   Bucket: "asset-management"
 
 redis:

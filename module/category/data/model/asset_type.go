@@ -10,13 +10,16 @@ type AssetType struct {
 	bun.BaseModel `bun:"table:asset_types"`
 
 	ID          int    `bun:",pk,autoincrement" json:"id"`
-	Code        string `bun:",unique,notnull,type:varchar(50)" json:"code"`
-	Name        string `bun:",notnull,type:varchar(100)" json:"name"`
-	Description string `bun:",type:text" json:"description"`
+	Code        string `json:"code"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 
 func (a *AssetType) ToEntity() *entity.AssetTypeEntity {
+	if a == nil {
+		return nil
+	}
 	return &entity.AssetTypeEntity{
 		ID:          a.ID,
 		Code:        a.Code,

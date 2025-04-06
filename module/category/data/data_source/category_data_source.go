@@ -26,4 +26,6 @@ type CategoryDataSource interface {
 
 	// Currencies
 	FindAllCurrencies(ctx context.Context) ([]model.Currency, error)
+
+	FindAllCategories(ctx context.Context) (*model.AllCategories, error)
 }

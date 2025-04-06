@@ -2,7 +2,6 @@ package datasource
 
 import (
 	"asset_management_backend/common/error_app"
-	"asset_management_backend/common/logger"
 	"asset_management_backend/module/auth/data/model"
 	"context"
 	"database/sql"
@@ -32,7 +31,6 @@ func (a *authDataSourceImpl) FindUserAuthByID(ctx context.Context, userID int) (
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, error_app.ErrDocumentNotFound
 		}
-		logger.Debug("AuthDataSource", err)
 		return nil, err
 	}
 

@@ -9,13 +9,16 @@ import (
 type AssetQuality struct {
 	bun.BaseModel `bun:"table:asset_qualities"`
 
-	ID          int    `bun:",pk,autoincrement" json:"id"`
-	Code        string `bun:",unique,notnull,type:varchar(50)" json:"code"`
-	Name        string `bun:",notnull,type:varchar(100)" json:"name"`
-	Description string `bun:",type:text" json:"description"`
+	ID int `bun:",pk,autoincrement" json:"id"`
+	Code        string `json:"code"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 func (a *AssetQuality) ToEntity() *entity.AssetQualityEntity {
+	if a == nil {
+		return nil
+	}
 	return &entity.AssetQualityEntity{
 		ID:          a.ID,
 		Code:        a.Code,

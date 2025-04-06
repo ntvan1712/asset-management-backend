@@ -10,6 +10,11 @@ type categoryUsecaseImpl struct {
 	categoryRepo repository.CategoryRepository
 }
 
+// GetAllCategories implements CategoryUsecase.
+func (c *categoryUsecaseImpl) GetAllCategories(ctx context.Context) (*entity.AllCategoriesEntity, error) {
+	return c.categoryRepo.FindAllCategories(ctx)
+}
+
 // UpdateAssetQuality implements CategoryUsecase.
 func (c *categoryUsecaseImpl) UpdateAssetQuality(ctx context.Context, id int, updateData map[string]interface{}) error {
 	return c.categoryRepo.UpdateAssetQuality(ctx, id, updateData)
