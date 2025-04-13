@@ -130,5 +130,5 @@ func (r *categoryRepositoryImpl) InsertLocation(ctx context.Context, location *e
 }
 
 func NewCategoryRepository() CategoryRepository {
-	return &categoryRepositoryImpl{categoryDS: datasource.NewCategoryDataSource(infras.GetDbInstance())}
+	return &categoryRepositoryImpl{categoryDS: datasource.NewCategoryDataSource(infras.GetDbProvider())}
 }

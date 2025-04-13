@@ -2,15 +2,14 @@ package datasource
 
 import (
 	"asset_management_backend/common/error_app"
+	"asset_management_backend/infras"
 	"asset_management_backend/module/category/data/model"
 	"context"
 	"fmt"
-
-	"github.com/uptrace/bun"
 )
 
 type categoryDataSourceImpl struct {
-	dbInstance *bun.DB
+	dbProvider *infras.DbProvider
 }
 
 func (ds *categoryDataSourceImpl) FindAllCategories(ctx context.Context) (*model.AllCategories, error) {
@@ -18,7 +17,7 @@ func (ds *categoryDataSourceImpl) FindAllCategories(ctx context.Context) (*model
 	var result struct {
 		AllCategories model.AllCategories `json:"all_categories"`
 	}
-	err := ds.dbInstance.NewRaw(`
+	err := ds.dbProvider.Instance.NewRaw(`
         SELECT json_build_object(
             'asset_qualities', (SELECT json_agg(aq) FROM asset_qualities aq),
             'asset_types', (SELECT json_agg(at) FROM asset_types at),
@@ -35,12 +34,12 @@ func (ds *categoryDataSourceImpl) FindAllCategories(ctx context.Context) (*model
 
 func (ds *categoryDataSourceImpl) FindAllAssetTypes(ctx context.Context) ([]model.AssetType, error) {
 	var assetTypes []model.AssetType
-	err := ds.dbInstance.NewSelect().Model(&assetTypes).Scan(ctx)
+	err := ds.dbProvider.Instance.NewSelect().Model(&assetTypes).Scan(ctx)
 	return assetTypes, err
 }
 
 func (ds *categoryDataSourceImpl) DeleteAssetTypeByID(ctx context.Context, id int) error {
-	res, err := ds.dbInstance.NewDelete().
+	res, err := ds.dbProvider.Instance.NewDelete().
 		Model((*model.AssetType)(nil)).
 		Where("id = ?", id).
 		Exec(ctx)
@@ -55,7 +54,7 @@ func (ds *categoryDataSourceImpl) DeleteAssetTypeByID(ctx context.Context, id in
 }
 
 func (ds *categoryDataSourceImpl) UpdateAssetType(ctx context.Context, id int, updateData map[string]interface{}) error {
-	query := ds.dbInstance.NewUpdate().
+	query := ds.dbProvider.Instance.NewUpdate().
 		Model((*model.AssetType)(nil)).
 		Where("id = ?", id)
 
@@ -68,7 +67,7 @@ func (ds *categoryDataSourceImpl) UpdateAssetType(ctx context.Context, id int, u
 }
 
 func (ds *categoryDataSourceImpl) InsertAssetType(ctx context.Context, assetType *model.AssetType) (*model.AssetType, error) {
-	_, err := ds.dbInstance.NewInsert().Model(assetType).Exec(ctx)
+	_, err := ds.dbProvider.Instance.NewInsert().Model(assetType).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -77,12 +76,12 @@ func (ds *categoryDataSourceImpl) InsertAssetType(ctx context.Context, assetType
 
 func (ds *categoryDataSourceImpl) FindAllAssetQualities(ctx context.Context) ([]model.AssetQuality, error) {
 	var assetQualities []model.AssetQuality
-	err := ds.dbInstance.NewSelect().Model(&assetQualities).Scan(ctx)
+	err := ds.dbProvider.Instance.NewSelect().Model(&assetQualities).Scan(ctx)
 	return assetQualities, err
 }
 
 func (ds *categoryDataSourceImpl) InsertAssetQuality(ctx context.Context, assetQuality *model.AssetQuality) (*model.AssetQuality, error) {
-	_, err := ds.dbInstance.NewInsert().Model(assetQuality).Exec(ctx)
+	_, err := ds.dbProvider.Instance.NewInsert().Model(assetQuality).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +89,7 @@ func (ds *categoryDataSourceImpl) InsertAssetQuality(ctx context.Context, assetQ
 }
 
 func (ds *categoryDataSourceImpl) UpdateAssetQuality(ctx context.Context, id int, updateData map[string]interface{}) error {
-	query := ds.dbInstance.NewUpdate().
+	query := ds.dbProvider.Instance.NewUpdate().
 		Model((*model.AssetQuality)(nil)).
 		Where("id = ?", id)
 
@@ -103,7 +102,7 @@ func (ds *categoryDataSourceImpl) UpdateAssetQuality(ctx context.Context, id int
 }
 
 func (ds *categoryDataSourceImpl) DeleteAssetQualityByID(ctx context.Context, id int) error {
-	res, err := ds.dbInstance.NewDelete().
+	res, err := ds.dbProvider.Instance.NewDelete().
 		Model((*model.AssetQuality)(nil)).
 		Where("id = ?", id).
 		Exec(ctx)
@@ -120,18 +119,18 @@ func (ds *categoryDataSourceImpl) DeleteAssetQualityByID(ctx context.Context, id
 // Currency methods
 func (ds *categoryDataSourceImpl) FindAllCurrencies(ctx context.Context) ([]model.Currency, error) {
 	var currencies []model.Currency
-	err := ds.dbInstance.NewSelect().Model(&currencies).Scan(ctx)
+	err := ds.dbProvider.Instance.NewSelect().Model(&currencies).Scan(ctx)
 	return currencies, err
 }
 
 func (ds *categoryDataSourceImpl) FindAllLocations(ctx context.Context) ([]model.Location, error) {
 	var locations []model.Location
-	err := ds.dbInstance.NewSelect().Model(&locations).Scan(ctx)
+	err := ds.dbProvider.Instance.NewSelect().Model(&locations).Scan(ctx)
 	return locations, err
 }
 
 func (ds *categoryDataSourceImpl) InsertLocation(ctx context.Context, location *model.Location) (*model.Location, error) {
-	_, err := ds.dbInstance.NewInsert().Model(location).Exec(ctx)
+	_, err := ds.dbProvider.Instance.NewInsert().Model(location).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +138,7 @@ func (ds *categoryDataSourceImpl) InsertLocation(ctx context.Context, location *
 }
 
 func (ds *categoryDataSourceImpl) UpdateLocation(ctx context.Context, id int, updateData map[string]interface{}) error {
-	query := ds.dbInstance.NewUpdate().
+	query := ds.dbProvider.Instance.NewUpdate().
 		Model((*model.Location)(nil)).
 		Where("id = ?", id)
 
@@ -152,7 +151,7 @@ func (ds *categoryDataSourceImpl) UpdateLocation(ctx context.Context, id int, up
 }
 
 func (ds *categoryDataSourceImpl) DeleteLocationByID(ctx context.Context, id int) error {
-	res, err := ds.dbInstance.NewDelete().
+	res, err := ds.dbProvider.Instance.NewDelete().
 		Model((*model.Location)(nil)).
 		Where("id = ?", id).
 		Exec(ctx)
@@ -166,6 +165,6 @@ func (ds *categoryDataSourceImpl) DeleteLocationByID(ctx context.Context, id int
 	return nil
 }
 
-func NewCategoryDataSource(dbInstance *bun.DB) *categoryDataSourceImpl {
-	return &categoryDataSourceImpl{dbInstance: dbInstance}
+func NewCategoryDataSource(dbProvider *infras.DbProvider) *categoryDataSourceImpl {
+	return &categoryDataSourceImpl{dbProvider: dbProvider}
 }

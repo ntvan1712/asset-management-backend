@@ -3,6 +3,7 @@ package infras
 import (
 	"context"
 	"database/sql"
+	"strings"
 	"sync"
 	"time"
 
@@ -15,22 +16,32 @@ import (
 )
 
 var (
-	dbInstance *bun.DB
+	dbProvider *DbProvider
 	initDbOnce sync.Once
 )
 
-func GetDbInstance() *bun.DB {
+type DbProvider struct {
+	Instance *bun.DB
+	Config   app_config.PostgresConfig
+}
+
+func GetDbProvider() *DbProvider {
 	initDbOnce.Do(initDb)
-	return dbInstance
+	return dbProvider
 }
 
 func initDb() {
-	dsn := app_config.GetAppConfig().PostgresConfig.ConnectionString
+
+	postgresqlConfig := app_config.GetAppConfig().PostgresConfig
+	dsn := postgresqlConfig.ConnectionString
 
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
 
-	dbInstance = bun.NewDB(sqldb, pgdialect.New(), bun.WithDiscardUnknownColumns())
-	dbInstance.AddQueryHook(&QueryHook{})
+	dbProvider = &DbProvider{
+		Instance: bun.NewDB(sqldb, pgdialect.New(), bun.WithDiscardUnknownColumns()),
+		Config:   postgresqlConfig,
+	}
+	dbProvider.Instance.AddQueryHook(&QueryHook{})
 
 	logger.Info("[PostgresInfras] init PostgresDB với Bun")
 }
@@ -42,5 +53,9 @@ func (h *QueryHook) BeforeQuery(ctx context.Context, event *bun.QueryEvent) cont
 }
 
 func (h *QueryHook) AfterQuery(ctx context.Context, event *bun.QueryEvent) {
-	logger.Info("[BunQueryHook]",time.Since(event.StartTime).String(), string(event.Query))
+	query := string(event.Query)
+	if strings.HasPrefix(query, "NOTIFY") {
+		return // bỏ qua notify
+	}
+	logger.Info("[BunQueryHook]", time.Since(event.StartTime).String(), query)
 }

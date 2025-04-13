@@ -6,12 +6,14 @@ import (
 	"asset_management_backend/infras"
 	"context"
 	"fmt"
+	"path/filepath"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
 )
 
-type MinioService struct {
+type FileStorageService struct {
 	minioProvider *infras.MinioProvider
 }
 
@@ -26,7 +28,32 @@ type PresignedResponse struct {
 	PresignedResult PresignedResult `json:"presigned_result"`
 }
 
-func (m *MinioService) CreatePresignedUrl(ctx context.Context, filePath string, expires time.Duration) (*PresignedResult, error) {
+func (m *FileStorageService) CreatePresignedUrls(
+	ctx context.Context,
+	fileNames []string,
+	folderName string,
+	expires time.Duration,
+) ([]PresignedResponse, error) {
+	var presignedResponses []PresignedResponse
+	for _, fileName := range fileNames {
+		uniqueFileName := uuid.New().String()
+		result, err := m.CreatePresignedUrl(
+			ctx,
+			fmt.Sprintf("%s/%s%s", folderName, uniqueFileName, filepath.Ext(fileName)),
+			expires,
+		)
+		if err != nil {
+			return nil, err
+		}
+		presignedResponses = append(presignedResponses, PresignedResponse{
+			FileName:        fileName,
+			PresignedResult: *result,
+		})
+	}
+	return presignedResponses, nil
+}
+
+func (m *FileStorageService) CreatePresignedUrl(ctx context.Context, filePath string, expires time.Duration) (*PresignedResult, error) {
 	presignedUrl, err := m.minioProvider.MinioClient.PresignedPutObject(
 		ctx,
 		m.minioProvider.Bucket,
@@ -45,7 +72,7 @@ func (m *MinioService) CreatePresignedUrl(ctx context.Context, filePath string, 
 	return result, nil
 }
 
-func (m *MinioService) Upload(ctx context.Context, objectName string, filePath string) (*string, error) {
+func (m *FileStorageService) Upload(ctx context.Context, objectName string, filePath string) (*string, error) {
 	info, err := m.minioProvider.MinioClient.FPutObject(
 		ctx,
 		m.minioProvider.Bucket,
@@ -58,7 +85,7 @@ func (m *MinioService) Upload(ctx context.Context, objectName string, filePath s
 	return &info.Key, nil
 }
 
-func (m *MinioService) Delete(ctx context.Context, objectName string) error {
+func (m *FileStorageService) Delete(ctx context.Context, objectName string) error {
 	err := m.minioProvider.MinioClient.RemoveObject(
 		ctx,
 		m.minioProvider.Bucket,
@@ -71,8 +98,8 @@ func (m *MinioService) Delete(ctx context.Context, objectName string) error {
 	return nil
 }
 
-func NewMinioService() *MinioService {
-	return &MinioService{
+func NewFileStorageService() *FileStorageService {
+	return &FileStorageService{
 		minioProvider: infras.GetMinioProvider(),
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"asset_management_backend/infras"
 	assetRouter "asset_management_backend/module/asset/router"
 	categoryRouter "asset_management_backend/module/category/router"
+	labelTaskRouter "asset_management_backend/module/label_task/router"
 	"log"
 )
 
@@ -24,10 +25,28 @@ func main() {
 	employeeServiceConn := infras.GetEmployeeServiceConn()
 	defer employeeServiceConn.Close()
 
+	defer infras.GetRabbitMQProvider().Channel.Close()
+
 	fiberApp := infras.GetFiberApp()
 
 	categoryRouter.Setup(fiberApp)
 	assetRouter.Setup(fiberApp)
+	labelTaskRouter.Setup(fiberApp)
+
+	// taskRepo := repository.NewLabelTaskRepository()
+	// for _ = range 2 {
+	// 	taskRepo.CreateTask(
+	// 		context.Background(),
+	// 		entity.LabelTaskRequest{
+	// 			LabelImagePath: "labels/17.jpg",
+	// 			TaskType:       "search_asset",
+	// 		},
+	// 		1001,
+	// 	)
+	// }
+	// go func () {
+	// 	datasource.GetTaskStream()
+	// }()
 
 	fiberAppErr := fiberApp.Listen(app_config.GetAppConfig().FiberServerConfig.HttpPort)
 	if fiberAppErr != nil {

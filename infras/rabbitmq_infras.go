@@ -49,6 +49,28 @@ func upsertQueue(queueName string, channel *amqp.Channel) error {
 	return err
 }
 
+func (r *RabbitMQProvider) Reconnect() error {
+	rabbitMqConfig := app_config.GetAppConfig().RabbitMqConfig
+	connection, err := amqp.DialConfig(rabbitMqConfig.URI, amqp.Config{
+		Heartbeat: 0,
+	})
+
+	if err != nil {
+		logger.Error("[RabbitMQInfras] Failed to load DialConfig RabbitMQ", err)
+		return err
+	}
+
+	//defer connection.Close()
+
+	channel, err := connection.Channel()
+	if err != nil {
+		logger.Error("[RabbitMQInfras] Failed to connect to RabbitMQ Channel", err)
+		return err
+	}
+	rabbitMQProvider.Channel = channel
+	return nil
+}
+
 func createRabbitMQChannel(rabbitMqConfig app_config.RabbitMQConfig) *amqp.Channel {
 
 	connection, err := amqp.DialConfig(rabbitMqConfig.URI, amqp.Config{
@@ -66,8 +88,8 @@ func createRabbitMQChannel(rabbitMqConfig app_config.RabbitMQConfig) *amqp.Chann
 		logger.Fatal("[RabbitMQInfras] Failed to connect to RabbitMQ Channel", err)
 	}
 
-	queues := [2]string{
-		rabbitMqConfig.CompletedLabelTaskQueue,
+	queues := [1]string{
+		// rabbitMqConfig.CompletedLabelTaskQueue,
 		rabbitMqConfig.LabelTaskQueue,
 	}
 

@@ -13,12 +13,12 @@ type AssetController struct {
 	assetUsecase usecase.AssetUsecase
 }
 
-func (a *AssetController) GetPresignedUrlsHandler(c *fiber.Ctx) error {
+func (a *AssetController) GetAssetFilesPresignedUrlsHandler(c *fiber.Ctx) error {
 	var fileNames []string
 	if err := c.BodyParser(&fileNames); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(error_app.BadRequestErrorResponse(err.Error()))
 	}
-	response, err := a.assetUsecase.GetPresignedUrls(c.Context(), fileNames)
+	response, err := a.assetUsecase.GetAssetFilesPresignedUrls(c.Context(), fileNames)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(error_app.InternalServerErrorResponse(err.Error()))
 	}

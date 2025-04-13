@@ -8,7 +8,7 @@ import (
 
 type AssetUsecase interface {
 	// Tạo presigned url cho client upload file
-	GetPresignedUrls(ctx context.Context, fileNames []string) ([]service.PresignedResponse, error)
+	GetAssetFilesPresignedUrls(ctx context.Context, fileNames []string) ([]service.PresignedResponse, error)
 
 	CreateAsset(ctx context.Context, request *entity.CreateAssetRequest) (*entity.AssetEntity, error)
 	GetAssetByID(ctx context.Context, assetID int) (*entity.AssetEntity, error)

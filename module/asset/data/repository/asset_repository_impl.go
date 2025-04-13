@@ -11,17 +11,15 @@ import (
 	"fmt"
 	"image/png"
 	"os"
-	"path/filepath"
 	"time"
 
-	"github.com/google/uuid"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/skip2/go-qrcode"
 )
 
 type assetRepositoryImpl struct {
 	assetDS      datasource.AssetDataSource
-	minioService *service.MinioService
+	minioService *service.FileStorageService
 }
 
 // FindByID implements AssetRepository.
@@ -104,30 +102,17 @@ func (a *assetRepositoryImpl) GenerateSerialNumber() string {
 	return id
 }
 
-// CreatePresignedUrls implements AssetRepository.
-func (a *assetRepositoryImpl) CreatePresignedUrls(ctx context.Context, fileNames []string) ([]service.PresignedResponse, error) {
-	var presignedResponses []service.PresignedResponse
-	for _, fileName := range fileNames {
-		uniqueFileName := uuid.New().String()
-		result, err := a.minioService.CreatePresignedUrl(
-			ctx,
-			fmt.Sprintf("asset-files/%s%s", uniqueFileName, filepath.Ext(fileName)),
-			time.Duration(5)*time.Minute,
-		)
-		if err != nil {
-			return nil, err
-		}
-		presignedResponses = append(presignedResponses, service.PresignedResponse{
-			FileName:        fileName,
-			PresignedResult: *result,
-		})
-	}
-	return presignedResponses, nil
+// CreateAssetFilesPresignedUrls implements AssetRepository.
+func (a *assetRepositoryImpl) CreateAssetFilesPresignedUrls(
+	ctx context.Context,
+	fileNames []string,
+) ([]service.PresignedResponse, error) {
+	return a.minioService.CreatePresignedUrls(ctx, fileNames, "asset-files", time.Minute*5)
 }
 
 func NewAssetRepository() AssetRepository {
 	return &assetRepositoryImpl{
-		assetDS:      datasource.NewAssetDataSource(infras.GetDbInstance()),
-		minioService: service.NewMinioService(),
+		assetDS:      datasource.NewAssetDataSource(infras.GetDbProvider()),
+		minioService: service.NewFileStorageService(),
 	}
 }

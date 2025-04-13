@@ -15,5 +15,5 @@ func Setup(app *fiber.App) {
 	assetController := controller.NewAssetController()
 	assetRoute.Get("/:asset_id", assetController.GetAssetByIDHandler)
 	assetRoute.Post("/", assetController.CreateAssetHandler)
-	assetRoute.Post("/presigned-urls", assetController.GetPresignedUrlsHandler)
+	assetRoute.Post("/presigned-urls", assetController.GetAssetFilesPresignedUrlsHandler)
 }

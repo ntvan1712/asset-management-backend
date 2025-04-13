@@ -8,6 +8,7 @@ grpc_connection:
 
 postgres:
   ConnectionString: "postgres://kaido1712:kaido1712@127.0.0.1:5433/asset_management?sslmode=disable&TimeZone=Asia/Ho_Chi_Minh"
+  TaskCompletedChannel: "task_completed_channel"
 
 logger:
   Development: true
@@ -19,12 +20,12 @@ logger:
 
 
 rabbitmq:
-  URI: "amqps://asset_server:kaido1712@127.0.0.1:5672/asset_management"
+  URI: "amqp://asset_server:kaido1712@127.0.0.1:5672/asset_management"
   LabelTaskQueue: "label_task_queue"
   CompletedLabelTaskQueue: "completed_label_task_queue"
 
 minio:
-  Endpoint: "172.16.21.212:9000"
+  Endpoint: "192.168.2.80:9000"
   AccessKeyID: "HiTyxWffYGOCQSDexhN9"
   SecretAccessKey: "V3PfVihk3XSjs0B4fh6Xomo9jEYTqjeAd5WrhSqh"
   Bucket: "asset-management"

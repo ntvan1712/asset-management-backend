@@ -22,6 +22,6 @@ func (a *authRepository) FindUserAuthByID(ctx context.Context, userID int) (*ent
 
 func NewAuthRepository() AuthRepository {
 	return &authRepository{
-		authDS: datasource.NewAuthDataSource(infras.GetDbInstance()),
+		authDS: datasource.NewAuthDataSource(infras.GetDbProvider()),
 	}
 }

@@ -16,6 +16,7 @@ const (
 	userNotFoundErrorCode       = "user-not-found-error"
 	createTempFileErrorCode     = "create-temp-file-error"
 	bodyExceedsLimitErrCode     = "body-exceeds-limit-error"
+	unknownErrCode              = "unknown-error"
 )
 
 var ErrBadRequest = errors.New(badRequestErrCode)
@@ -31,3 +32,4 @@ var ErrPremiumRequired = errors.New(premiumRequiredErrorCode)
 var ErrUserNotFound = errors.New(userNotFoundErrorCode)
 var ErrCreateTempFile = errors.New(createTempFileErrorCode)
 var ErrBodyExceedsLimit = errors.New(bodyExceedsLimitErrCode)
+var ErrUnknown = errors.New(unknownErrCode)

@@ -38,9 +38,9 @@ func (a *assetUsecaseImpl) CreateAsset(ctx context.Context, request *entity.Crea
 	return asset, nil
 }
 
-// GetPresignedUrls implements AssetRepository.
-func (a *assetUsecaseImpl) GetPresignedUrls(ctx context.Context, fileNames []string) ([]service.PresignedResponse, error) {
-	return a.assetRepo.CreatePresignedUrls(ctx, fileNames)
+// GetAssetFilesPresignedUrls implements AssetRepository.
+func (a *assetUsecaseImpl) GetAssetFilesPresignedUrls(ctx context.Context, fileNames []string) ([]service.PresignedResponse, error) {
+	return a.assetRepo.CreateAssetFilesPresignedUrls(ctx, fileNames)
 }
 
 func NewAssetUsecase() AssetUsecase {

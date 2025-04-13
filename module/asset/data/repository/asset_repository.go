@@ -8,7 +8,7 @@ import (
 
 type AssetRepository interface {
 	// Tạo presigned url cho client upload file
-	CreatePresignedUrls(ctx context.Context, fileNames []string) ([]service.PresignedResponse, error)
+	CreateAssetFilesPresignedUrls(ctx context.Context, fileNames []string) ([]service.PresignedResponse, error)
 	// Random serial number ngẫu nhiên
 	GenerateSerialNumber() string
 	// Tạo ảnh label barcode ứng với serial number và upload, trả về image path
