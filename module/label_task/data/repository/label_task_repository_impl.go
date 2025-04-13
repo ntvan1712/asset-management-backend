@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"asset_management_backend/common/error_app"
 	"asset_management_backend/common/service"
 	"asset_management_backend/infras"
 	datasource "asset_management_backend/module/label_task/data/data_source"
@@ -48,21 +47,29 @@ func (a *labelTaskRepositoryImpl) CreateTask(
 	go func() {
 		defer close(resultCh)
 		defer datasource.Unsubscribe()
-
-		for id := range completedTaskIdsCh {
-			if id != nil && *id == newTaskModel.ID {
-				labelTaskResult, err := a.labelTaskDS.FindByID(ctx, newTaskModel.ID)
-				if err != nil {
-					resultCh <- &entity.LabelTaskStreamResponse{Error: err}
-				} else {
-					resultCh <- &entity.LabelTaskStreamResponse{LabelTask: labelTaskResult.ToEntity(), Error: nil}
-				}
+	
+		for {
+			select {
+			case <-ctx.Done():
+				// Context bị huỷ (timeout hoặc cancel) thì thoát goroutine
 				return
+			case id, ok := <-completedTaskIdsCh:
+				if !ok {
+					return
+				}
+				if id != nil && *id == newTaskModel.ID {
+					labelTaskResult, err := a.labelTaskDS.FindByID(ctx, newTaskModel.ID)
+					if err != nil {
+						resultCh <- &entity.LabelTaskStreamResponse{Error: err}
+					} else {
+						resultCh <- &entity.LabelTaskStreamResponse{LabelTask: labelTaskResult.ToEntity(), Error: nil}
+					}
+					return
+				}
 			}
 		}
-		resultCh <- &entity.LabelTaskStreamResponse{Error: error_app.ErrUnknown}
-
 	}()
+	
 
 	return resultCh, nil
 }

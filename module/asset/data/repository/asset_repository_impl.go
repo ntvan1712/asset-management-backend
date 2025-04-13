@@ -82,7 +82,7 @@ func (a *assetRepositoryImpl) GenerateLabelImage(ctx context.Context, serialNumb
 		return nil, err
 	}
 
-	objectName := fmt.Sprintf("asset-files/%s", fileName)
+	objectName := fmt.Sprintf("labels/%s", fileName)
 	uploadedKey, err := a.minioService.Upload(ctx, objectName, fileName)
 	if err != nil {
 		return nil, err

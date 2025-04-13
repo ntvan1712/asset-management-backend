@@ -36,9 +36,10 @@ func initFiberApp() {
 
 	fiberApp.Use(fiberLogger)
 	fiberApp.Use(cors.New(cors.Config{
-		AllowOrigins: "*", // Cho phép tất cả các domain
-		AllowHeaders: "Content-Type, Authorization",
+		AllowOrigins: "*", 
+		AllowHeaders: "*",
 		AllowMethods: "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
 	}))
+
 	logger.Info("[ServerInfras] Init Server fiber app")
 }

@@ -32,6 +32,11 @@ func (a *LabelTaskController) GetLabelTasksPresignedUrlsHandler(c *fiber.Ctx) er
 }
 
 func (a *LabelTaskController) CreateLabelTaskHandler(c *fiber.Ctx) error {
+	c.Set("Content-Type", "text/event-stream")
+	c.Set("Cache-Control", "no-cache")
+	c.Set("Connection", "keep-alive")
+	c.Set("Transfer-Encoding", "chunked")
+
 	var request *entity.LabelTaskRequest
 	if err := c.BodyParser(&request); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(error_app.BadRequestErrorResponse(err.Error()))
@@ -46,13 +51,7 @@ func (a *LabelTaskController) CreateLabelTaskHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(error_app.UnauthorizedErrorResponse("Invalid user ID"))
 	}
 
-	c.Set("Content-Type", "text/event-stream")
-	c.Set("Cache-Control", "no-cache")
-	c.Set("Connection", "keep-alive")
-
 	rawCtx.SetBodyStreamWriter(func(w *bufio.Writer) {
-		fmt.Fprintf(w, "data: %s\n\n", "start")
-		w.Flush()
 
 		timeoutCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
