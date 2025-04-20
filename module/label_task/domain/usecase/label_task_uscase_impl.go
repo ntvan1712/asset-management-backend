@@ -12,8 +12,13 @@ type labelTaskRepositoryImpl struct {
 	labelTaskRepo repository.LabelTaskRepository
 }
 
+// CreateTasks implements LabelTaskUsecase.
+func (a *labelTaskRepositoryImpl) CreateTasks(ctx context.Context, requests []entity.LabelTaskRequest, creatorID int) (<-chan *entity.LabelTaskStreamResponse, error) {
+	return a.labelTaskRepo.CreateTasks(ctx, requests, creatorID)
+}
+
 // CreateTask implements LabelTaskUsecase.
-func (a *labelTaskRepositoryImpl) CreateTask(ctx context.Context, request entity.LabelTaskRequest, creatorID int) (<-chan *entity.LabelTaskStreamResponse, error){
+func (a *labelTaskRepositoryImpl) CreateTask(ctx context.Context, request entity.LabelTaskRequest, creatorID int) (<-chan *entity.LabelTaskStreamResponse, error) {
 	return a.labelTaskRepo.CreateTask(ctx, request, creatorID)
 }
 

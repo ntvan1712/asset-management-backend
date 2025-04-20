@@ -5,7 +5,6 @@ import (
 	"asset_management_backend/infras"
 	"asset_management_backend/module/category/data/model"
 	"context"
-	"fmt"
 )
 
 type categoryDataSourceImpl struct {
@@ -58,9 +57,7 @@ func (ds *categoryDataSourceImpl) UpdateAssetType(ctx context.Context, id int, u
 		Model((*model.AssetType)(nil)).
 		Where("id = ?", id)
 
-	for key, value := range updateData {
-		query = query.Set(fmt.Sprintf("%s = ?", key), value)
-	}
+	infras.BuildUpdateQueryByMap(query, updateData)
 
 	_, err := query.Exec(ctx)
 	return err
@@ -93,9 +90,7 @@ func (ds *categoryDataSourceImpl) UpdateAssetQuality(ctx context.Context, id int
 		Model((*model.AssetQuality)(nil)).
 		Where("id = ?", id)
 
-	for key, value := range updateData {
-		query = query.Set(fmt.Sprintf("%s = ?", key), value)
-	}
+	infras.BuildUpdateQueryByMap(query, updateData)
 
 	_, err := query.Exec(ctx)
 	return err
@@ -142,9 +137,7 @@ func (ds *categoryDataSourceImpl) UpdateLocation(ctx context.Context, id int, up
 		Model((*model.Location)(nil)).
 		Where("id = ?", id)
 
-	for key, value := range updateData {
-		query = query.Set(fmt.Sprintf("%s = ?", key), value)
-	}
+	infras.BuildUpdateQueryByMap(query, updateData)
 
 	_, err := query.Exec(ctx)
 	return err

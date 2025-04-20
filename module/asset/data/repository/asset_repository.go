@@ -17,4 +17,11 @@ type AssetRepository interface {
 	CreateAsset(ctx context.Context, request *entity.CreateAssetRequest) (*entity.AssetEntity, error)
 	FindByID(ctx context.Context, assetID int) (*entity.AssetEntity, error)
 	DeleteAssetFile(ctx context.Context, filePath string) error
+
+	FindByFilter(
+		ctx context.Context,
+		filterQuery entity.AssetFilterQuery,
+	) ([]entity.AssetEntity, error)
+
+	Update(ctx context.Context, assetID int, request entity.UpdateAssetRequest) error
 }

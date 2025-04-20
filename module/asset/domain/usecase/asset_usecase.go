@@ -12,4 +12,11 @@ type AssetUsecase interface {
 
 	CreateAsset(ctx context.Context, request *entity.CreateAssetRequest) (*entity.AssetEntity, error)
 	GetAssetByID(ctx context.Context, assetID int) (*entity.AssetEntity, error)
+
+	SearchByFilter(
+		ctx context.Context,
+		filterQuery entity.AssetFilterQuery,
+	) ([]entity.AssetEntity, error)
+
+	Update(ctx context.Context, assetID int, request entity.UpdateAssetRequest) (*entity.AssetEntity, error)
 }

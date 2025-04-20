@@ -14,6 +14,6 @@ func Setup(app *fiber.App) {
 
 	labelTaskController := controller.NewLabelTaskController()
 	labelTaskRoute.Post("/presigned-urls", labelTaskController.GetLabelTasksPresignedUrlsHandler)
-	labelTaskRoute.Post("/", labelTaskController.CreateLabelTaskHandler)
-
+	labelTaskRoute.Post("/task", labelTaskController.CreateLabelTaskHandler)
+	labelTaskRoute.Post("/tasks", labelTaskController.CreateLabelTasksHandler)
 }

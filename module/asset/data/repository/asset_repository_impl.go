@@ -3,10 +3,12 @@ package repository
 import (
 	"asset_management_backend/common/logger"
 	"asset_management_backend/common/service"
+	app_utils "asset_management_backend/common/utils"
 	"asset_management_backend/infras"
-	datasource "asset_management_backend/module/asset/data/data_source"
+	assetData "asset_management_backend/module/asset/data/data_source"
 	"asset_management_backend/module/asset/data/model"
 	"asset_management_backend/module/asset/domain/entity"
+	labelTaskData "asset_management_backend/module/label_task/data/data_source"
 	"context"
 	"fmt"
 	"image/png"
@@ -18,8 +20,60 @@ import (
 )
 
 type assetRepositoryImpl struct {
-	assetDS      datasource.AssetDataSource
+	assetDS      assetData.AssetDataSource
+	labelTaskDS  labelTaskData.LabelTaskDataSource
 	minioService *service.FileStorageService
+}
+
+// Update implements AssetRepository.
+func (a *assetRepositoryImpl) Update(ctx context.Context, assetID int, request entity.UpdateAssetRequest) error {
+
+	if request.UpdateData != nil {
+		if err := a.assetDS.UpdateByID(ctx, assetID, app_utils.StructToUpdateMap(request.UpdateData)); err != nil {
+			return err
+		}
+	}
+
+	if request.ShouldCreateNewLabel != nil && *request.ShouldCreateNewLabel {
+		serialNumber, err := a.assetDS.GetSerialNumberByID(ctx, assetID)
+		if err != nil {
+			return err
+		}
+		newAssetPath, err := a.GenerateLabelImage(ctx, *serialNumber)
+		if err == nil && newAssetPath != nil {
+			updateMap := map[string]interface{}{
+				"path":       *newAssetPath,
+				"created_at": time.Now(),
+			}
+			if err := a.assetDS.UpdateLabelImageByAssetID(ctx, assetID, updateMap); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(request.RemoveAssetFileIDs) != 0 {
+		if err := a.assetDS.DeleteAssetFilesByIDs(ctx, request.RemoveAssetFileIDs); err != nil {
+			return err
+		}
+	}
+
+	if len(request.NewAssetFilePaths) != 0 {
+		if _, err := a.assetDS.InsertAssetFiles(ctx, model.AssetFilesFromPath(request.NewAssetFilePaths, assetID)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// FindByFilter implements AssetRepository.
+func (a *assetRepositoryImpl) FindByFilter(ctx context.Context, filterQuery entity.AssetFilterQuery) ([]entity.AssetEntity, error) {
+	filterModel := model.NewAssetFilterModelFromQuery(filterQuery)
+	assetModels, err := a.assetDS.FindByFilter(ctx, filterModel)
+	if err != nil {
+		return nil, err
+	}
+	return model.AssetModelsToEntities(assetModels), nil
 }
 
 // FindByID implements AssetRepository.
@@ -60,7 +114,21 @@ func (a *assetRepositoryImpl) CreateAsset(ctx context.Context, request *entity.C
 		}()
 		logger.Error("[AssetRepository]", "InsertAssetFilesErr", err)
 	}
+	assetLabelImage, err := a.assetDS.InsertLabelImage(ctx, model.AssetLabelImage{
+		Path:      *request.AssetLabelPath,
+		CreatedAt: time.Now(),
+		AssetID:   assetModel.ID,
+	})
+	if err != nil {
+		a.minioService.Delete(context.Background(), *request.AssetLabelPath)
+		logger.Error("[AssetRepository]", "InsertAssetLabelImageErr", err)
+	}
+	if request.LabelTaskID != nil {
+		updateData := map[string]interface{}{"asset_label_image_id": assetLabelImage.ID}
+		a.labelTaskDS.UpdateByID(ctx, *request.LabelTaskID, updateData)
+	}
 	assetModel.AssetFiles = assetFiles
+	assetModel.AssetLabelImage = assetLabelImage
 	return assetModel.ToEntity(), nil
 }
 
@@ -112,7 +180,8 @@ func (a *assetRepositoryImpl) CreateAssetFilesPresignedUrls(
 
 func NewAssetRepository() AssetRepository {
 	return &assetRepositoryImpl{
-		assetDS:      datasource.NewAssetDataSource(infras.GetDbProvider()),
+		assetDS:      assetData.NewAssetDataSource(infras.GetDbProvider()),
+		labelTaskDS:  labelTaskData.NewLabelTaskDataSource(infras.GetDbProvider()),
 		minioService: service.NewFileStorageService(),
 	}
 }

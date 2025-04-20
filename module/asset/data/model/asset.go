@@ -1,10 +1,11 @@
 package model
 
 import (
-	"asset_management_backend/app_config"
 	"asset_management_backend/common/enums"
 	"asset_management_backend/module/asset/domain/entity"
 	categoryModel "asset_management_backend/module/category/data/model"
+	"context"
+	"strings"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -25,7 +26,6 @@ type Asset struct {
 	Description        *string    `json:"description,omitempty"`
 	AddedAt            *time.Time `json:"added_at,omitempty"`
 	Status             string     `json:"status"`
-	LabelImagePath     *string    `json:"label_image_path,omitempty"`
 
 	PriceUnitID    *int `json:"price_unit_id,omitempty"`
 	LocationID     int  `json:"location_id"`
@@ -37,10 +37,24 @@ type Asset struct {
 	AssetQuality categoryModel.AssetQuality `bun:"rel:belongs-to,join:asset_quality_id=id"`
 	AssetType    categoryModel.AssetType    `bun:"rel:belongs-to,join:asset_type_id=id"`
 
-	AssetFiles []AssetFile `bun:"rel:has-many,join:id=asset_id"`
+	AssetFiles      []AssetFile      `bun:"rel:has-many,join:id=asset_id"`
+	AssetLabelImage *AssetLabelImage `bun:"rel:has-one,join:id=asset_id"`
+}
+
+func LoadAllAssetRelationQuery(selectModelQuery *bun.SelectQuery) {
+	selectModelQuery.Relation("PriceUnit").
+		Relation("Location").
+		Relation("AssetQuality").
+		Relation("AssetType").
+		Relation("AssetFiles").
+		Relation("AssetLabelImage")
 }
 
 func NewAssetModelFromRequest(request *entity.CreateAssetRequest) Asset {
+	// Đảm bảo serial number luôn là
+	upperSerialNumber := strings.ToUpper(*request.SerialNumber)
+	request.SerialNumber = &upperSerialNumber
+	addedAt := time.Now().UTC()
 	return Asset{
 		SerialNumber:       *request.SerialNumber,
 		ModelNumber:        request.ModelNumber,
@@ -52,20 +66,15 @@ func NewAssetModelFromRequest(request *entity.CreateAssetRequest) Asset {
 		Supplier:           request.Supplier,
 		Description:        request.Description,
 		Status:             enums.AssetStatusEnum.Available,
-		LabelImagePath:     request.AssetLabelPath,
 		PriceUnitID:        request.PriceUnitId,
 		LocationID:         request.LocationId,
 		AssetQualityID:     request.AssetQualityId,
 		AssetTypeID:        request.AssetTypeId,
+		AddedAt: &addedAt,
 	}
 }
 
 func (a *Asset) ToEntity() *entity.AssetEntity {
-	var labelImageUrl *string
-	if a.LabelImagePath != nil {
-		url := app_config.GetAppConfig().MinioConfig.GetFullAssetUrl(*a.LabelImagePath)
-		labelImageUrl = &url
-	}
 	var assetFiles []entity.AssetFileEntity
 	if a.AssetFiles != nil {
 		assetFiles = AssetFileModelsToEntities(a.AssetFiles)
@@ -83,11 +92,26 @@ func (a *Asset) ToEntity() *entity.AssetEntity {
 		Description:        a.Description,
 		AddedAt:            a.AddedAt,
 		Status:             a.Status,
-		LabelImageUrl:      labelImageUrl,
 		PriceUnit:          a.PriceUnit.ToEntity(),
 		Location:           a.Location.ToEntity(),
 		AssetQuality:       a.AssetQuality.ToEntity(),
 		AssetType:          a.AssetType.ToEntity(),
 		AssetFiles:         assetFiles,
+		AssetLabelImage:    a.AssetLabelImage.ToEntity(),
 	}
 }
+
+func AssetModelsToEntities(assetModels []Asset) []entity.AssetEntity {
+	var entities []entity.AssetEntity
+
+	for _, asset := range assetModels {
+		entities = append(entities, *asset.ToEntity())
+	}
+
+	return entities
+}
+
+
+var _ bun.AfterDeleteHook = (*Asset)(nil)
+
+func (*Asset) AfterDelete(ctx context.Context, query *bun.DeleteQuery) error { return nil }

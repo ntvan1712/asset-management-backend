@@ -12,11 +12,10 @@ import (
 )
 
 type LabelTaskCompletedListener struct {
-	dbProvider         *infras.DbProvider
-	completedTaskIDsCh chan *int
-	subscribers        int
-	listener           *pgdriver.Listener
-	mu                 sync.Mutex
+	dbProvider       *infras.DbProvider
+	listener         *pgdriver.Listener
+	subscriberChans  map[int]chan *int
+	mu               sync.Mutex
 }
 
 var (
@@ -24,47 +23,63 @@ var (
 	once               sync.Once
 )
 
-func GetTaskStream() (<-chan *int, error) {
-	
-	var err error
+func GetTaskStream(subscriberID int) (<-chan *int, error) {
 	once.Do(func() {
 		globalTaskListener = &LabelTaskCompletedListener{
-			dbProvider: infras.GetDbProvider(),
+			dbProvider:      infras.GetDbProvider(),
+			subscriberChans: make(map[int]chan *int),
 		}
-		
 	})
-	globalTaskListener.subscribers++
-	if globalTaskListener.listener == nil {
-		if _, err = globalTaskListener.Subscribe(); err != nil {
-			return nil, err
-		}
-	}
-
-	logger.Info("LabelTaskCompletedListener", "Stream called", "Starting listener", "Subscribers", globalTaskListener.subscribers)
-	return globalTaskListener.completedTaskIDsCh, nil
+	return globalTaskListener.subscribe(subscriberID)
 }
 
-func (m *LabelTaskCompletedListener) Subscribe() (<-chan *int, error) {
-	logger.Info("LabelTaskCompletedListener", "Subscribe called", "Starting Subscribe")
+
+func (m *LabelTaskCompletedListener) subscribe(subscriberID int) (<-chan *int, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	if m.completedTaskIDsCh != nil {
-		return m.completedTaskIDsCh, nil
+	// Trả về channel cũ nếu đã tồn tại
+	if ch, ok := m.subscriberChans[subscriberID]; ok {
+		return ch, nil
 	}
 
-	m.completedTaskIDsCh = make(chan *int, 1000)
-	listener := pgdriver.NewListener(m.dbProvider.Instance)
-	if err := listener.Listen(context.Background(), m.dbProvider.Config.TaskCompletedChannel); err != nil {
-		return nil, err
+	// Nếu chưa có listener, khởi tạo
+	if m.listener == nil {
+		listener := pgdriver.NewListener(m.dbProvider.Instance)
+		if err := listener.Listen(context.Background(), m.dbProvider.Config.TaskCompletedChannel); err != nil {
+			return nil, err
+		}
+		m.listener = listener
+		go m.listenLoop()
 	}
-	m.listener = listener
 
-	go m.listenLoop()
-
-	return m.completedTaskIDsCh, nil
+	// Tạo channel mới, lưu vào map trước khi unlock
+	ch := make(chan *int, 1000)
+	m.subscriberChans[subscriberID] = ch
+	logger.Info("LabelTaskCompletedListener", "New subscriber registered", "SubscriberID", subscriberID)
+	return ch, nil
 }
 
+// Unsubscribe removes a subscriber and closes their channel
+func Unsubscribe(subscriberID int) {
+	if globalTaskListener == nil {
+		return
+	}
+	globalTaskListener.mu.Lock()
+	defer globalTaskListener.mu.Unlock()
+
+	if ch, ok := globalTaskListener.subscriberChans[subscriberID]; ok {
+		close(ch)
+		delete(globalTaskListener.subscriberChans, subscriberID)
+		logger.Info("LabelTaskCompletedListener", "Subscriber removed", "SubscriberID", subscriberID)
+	}
+
+	if len(globalTaskListener.subscriberChans) == 0 {
+		go globalTaskListener.shutdownAfterDelay()
+	}
+}
+
+// Internal loop that distributes notifications to all subscribers
 func (m *LabelTaskCompletedListener) listenLoop() {
 	for notification := range m.listener.Channel() {
 		var payload struct {
@@ -76,52 +91,39 @@ func (m *LabelTaskCompletedListener) listenLoop() {
 		}
 
 		m.mu.Lock()
-		ch := m.completedTaskIDsCh
-		m.mu.Unlock()
-
-		if ch != nil {
+		for id, ch := range m.subscriberChans {
 			select {
 			case ch <- &payload.ID:
-				logger.Info("LabelTaskCompletedListener", "TaskID", payload)
+				logger.Info("LabelTaskCompletedListener", "Notification sent", "SubscriberID", id, "TaskID", payload.ID)
 			default:
-				logger.Info("LabelTaskCompletedListener", "TaskID from default", payload)
+				logger.Warn("LabelTaskCompletedListener", "Subscriber channel full, skipping", "SubscriberID", id)
 			}
 		}
+		m.mu.Unlock()
 	}
-	logger.Info("LabelTaskCompletedListener", "listenLoop stopped, listener channel closed")
+	logger.Info("LabelTaskCompletedListener", "listenLoop stopped", "Listener channel closed")
 }
 
-func Unsubscribe() {
-	if (globalTaskListener == nil){
-		return
-	}
-	globalTaskListener.mu.Lock()
-	defer globalTaskListener.mu.Unlock()
-
-	globalTaskListener.subscribers--
-	logger.Info("LabelTaskCompletedListener", "Subscribers", globalTaskListener.subscribers)
-	if globalTaskListener.subscribers <= 0 {
-		go globalTaskListener.shutdownAfterDelay()
-	}
-}
-
+// Shutdown after short delay to wait for potential new subscribers
 func (m *LabelTaskCompletedListener) shutdownAfterDelay() {
-	time.Sleep(5 * time.Second) // chờ xem có subscriber mới không
+	time.Sleep(5 * time.Second)
 
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	if m.subscribers > 0 {
+	if len(m.subscriberChans) > 0 {
 		return
 	}
 
 	if m.listener != nil {
 		_ = m.listener.Close()
+		m.listener = nil
 	}
-	if m.completedTaskIDsCh != nil {
-		close(m.completedTaskIDsCh)
-		m.completedTaskIDsCh = nil
+
+	for id, ch := range m.subscriberChans {
+		close(ch)
+		delete(m.subscriberChans, id)
 	}
-	m.listener = nil
-	logger.Info("LabelTaskCompletedListener", "shutdownAfterDelay called", "Close stream")
+
+	logger.Info("LabelTaskCompletedListener", "shutdownAfterDelay called", "Listener closed")
 }

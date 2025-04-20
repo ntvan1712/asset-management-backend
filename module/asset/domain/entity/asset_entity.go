@@ -18,12 +18,12 @@ type AssetEntity struct {
 	Description        *string    `json:"description,omitempty"`
 	AddedAt            *time.Time `json:"added_at,omitempty"`
 	Status             string     `json:"status"`
-	LabelImageUrl      *string    `json:"label_image_url,omitempty"`
 
 	PriceUnit    *categoryEntity.CurrencyEntity     `json:"price_unit,omitempty"`
 	Location     *categoryEntity.LocationEntity     `json:"location,omitempty"`
 	AssetQuality *categoryEntity.AssetQualityEntity `json:"asset_quality,omitempty"`
 	AssetType    *categoryEntity.AssetTypeEntity    `json:"asset_type,omitempty"`
 
-	AssetFiles []AssetFileEntity `json:"asset_files,omitempty"`
+	AssetFiles      []AssetFileEntity      `json:"asset_files,omitempty"`
+	AssetLabelImage *AssetLabelImageEntity `json:"asset_label_image,omitempty"`
 }

@@ -10,6 +10,15 @@ type LabelTaskRepository interface {
 	// Tạo presigned url cho client upload file
 	CreateLabelTasksPresignedUrls(ctx context.Context, fileNames []string) ([]service.PresignedResponse, error)
 
-	CreateTasks(ctx context.Context, requests []entity.LabelTaskRequest)
-	CreateTask(ctx context.Context, request entity.LabelTaskRequest, creatorID int) (<-chan *entity.LabelTaskStreamResponse, error)
+	CreateTasks(
+		ctx context.Context,
+		requests []entity.LabelTaskRequest,
+		creatorID int,
+	) (<-chan *entity.LabelTaskStreamResponse, error)
+
+	CreateTask(
+		ctx context.Context,
+		request entity.LabelTaskRequest,
+		creatorID int,
+	) (<-chan *entity.LabelTaskStreamResponse, error)
 }

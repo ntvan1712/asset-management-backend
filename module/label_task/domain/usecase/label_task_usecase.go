@@ -11,5 +11,15 @@ type LabelTaskUsecase interface {
 	GetLabelTasksPresignedUrls(ctx context.Context, fileNames []string) ([]service.PresignedResponse, error)
 	GetLabelTaskPresignedUrl(ctx context.Context, fileName string) (*service.PresignedResponse, error)
 
-	CreateTask(ctx context.Context, request entity.LabelTaskRequest, creatorID int) (<-chan *entity.LabelTaskStreamResponse, error)
+	CreateTask(
+		ctx context.Context,
+		request entity.LabelTaskRequest,
+		creatorID int,
+	) (<-chan *entity.LabelTaskStreamResponse, error)
+
+	CreateTasks(
+		ctx context.Context,
+		requests []entity.LabelTaskRequest,
+		creatorID int,
+	) (<-chan *entity.LabelTaskStreamResponse, error)
 }

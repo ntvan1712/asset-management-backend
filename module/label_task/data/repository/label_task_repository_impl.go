@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"asset_management_backend/common/logger"
 	"asset_management_backend/common/service"
 	"asset_management_backend/infras"
 	datasource "asset_management_backend/module/label_task/data/data_source"
@@ -9,6 +10,8 @@ import (
 	"context"
 	"encoding/json"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type labelTaskRepositoryImpl struct {
@@ -33,7 +36,8 @@ func (a *labelTaskRepositoryImpl) CreateTask(
 		return nil, err
 	}
 
-	completedTaskIdsCh, err := datasource.GetTaskStream()
+	streamID := int(uuid.New().ID())
+	completedTaskIdsCh, err := datasource.GetTaskStream(streamID)
 	if err != nil {
 		return nil, err
 	}
@@ -46,8 +50,8 @@ func (a *labelTaskRepositoryImpl) CreateTask(
 
 	go func() {
 		defer close(resultCh)
-		defer datasource.Unsubscribe()
-	
+		defer datasource.Unsubscribe(streamID)
+
 		for {
 			select {
 			case <-ctx.Done():
@@ -69,14 +73,78 @@ func (a *labelTaskRepositoryImpl) CreateTask(
 			}
 		}
 	}()
-	
 
 	return resultCh, nil
 }
 
 // CreateTasks implements LabelTaskRepository.
-func (a *labelTaskRepositoryImpl) CreateTasks(ctx context.Context, requests []entity.LabelTaskRequest) {
-	panic("unimplemented")
+func (a *labelTaskRepositoryImpl) CreateTasks(
+	ctx context.Context,
+	requests []entity.LabelTaskRequest,
+	creatorID int,
+) (<-chan *entity.LabelTaskStreamResponse, error) {
+	newTaskModels, err := a.labelTaskDS.InsertMany(ctx, model.NewAssetLabelTasksFromRequests(requests, creatorID))
+	if err != nil {
+		return nil, err
+	}
+
+	streamID := int(uuid.New().ID())
+	completedTaskIdsCh, err := datasource.GetTaskStream(streamID)
+	if err != nil {
+		return nil, err
+	}
+	resultCh := make(chan *entity.LabelTaskStreamResponse)
+	expectedTaskIDs := make(map[int]struct{})
+
+	for _, task := range newTaskModels {
+		bodyData, err := json.Marshal(task.ToTaskPublish())
+		if err != nil {
+			logger.Error("[LabelTaskRepository.CreateTasks]", "Marshal error", err)
+			continue
+		}
+
+		if err := a.messageQueueService.SafePublish(ctx, bodyData, a.messageQueueService.LabelTaskQueueName); err != nil {
+			logger.Error("[LabelTaskRepository.CreateTasks]", "Publish task error", err)
+			continue
+		}
+		expectedTaskIDs[task.ID] = struct{}{}
+	}
+
+	go func() {
+		defer close(resultCh)
+		defer datasource.Unsubscribe(streamID)
+		completedCount := 0
+		publishedTasksCount := len(expectedTaskIDs)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case idPtr, ok := <-completedTaskIdsCh:
+				if !ok {
+					continue
+				}
+				if idPtr == nil {
+					continue
+				}
+				id := *idPtr
+				if _, exists := expectedTaskIDs[id]; exists {
+					labelTaskResult, err := a.labelTaskDS.FindByID(ctx, id)
+					if err != nil {
+						resultCh <- &entity.LabelTaskStreamResponse{Error: err}
+					} else {
+						resultCh <- &entity.LabelTaskStreamResponse{LabelTask: labelTaskResult.ToEntity()}
+					}
+					delete(expectedTaskIDs, id)
+					completedCount++
+					if completedCount == publishedTasksCount {
+						return
+					}
+				}
+			}
+		}
+	}()
+
+	return resultCh, nil
 }
 
 // CreateLabelTasksPresignedUrls implements AssetRepository.

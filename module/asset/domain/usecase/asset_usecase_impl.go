@@ -12,6 +12,19 @@ type assetUsecaseImpl struct {
 	assetRepo repository.AssetRepository
 }
 
+// Update implements AssetUsecase.
+func (a *assetUsecaseImpl) Update(ctx context.Context, assetID int, request entity.UpdateAssetRequest) (*entity.AssetEntity, error) {
+	if err := a.assetRepo.Update(ctx, assetID, request); err != nil {
+		return nil, err
+	}
+	return a.assetRepo.FindByID(ctx, assetID)
+}
+
+// SearchByFilter implements AssetUsecase.
+func (a *assetUsecaseImpl) SearchByFilter(ctx context.Context, filterQuery entity.AssetFilterQuery) ([]entity.AssetEntity, error) {
+	return a.assetRepo.FindByFilter(ctx, filterQuery)
+}
+
 // GetAssetByID implements AssetUsecase.
 func (a *assetUsecaseImpl) GetAssetByID(ctx context.Context, assetID int) (*entity.AssetEntity, error) {
 	return a.assetRepo.FindByID(ctx, assetID)

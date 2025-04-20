@@ -13,6 +13,16 @@ type labelTaskDataSourceImpl struct {
 	dbProvider *infras.DbProvider
 }
 
+// InsertMany implements LabelTaskDataSource.
+func (a labelTaskDataSourceImpl) InsertMany(ctx context.Context, newLabelTasks []model.AssetLabelTask) ([]model.AssetLabelTask, error) {
+	_, err := a.dbProvider.Instance.NewInsert().Model(&newLabelTasks).Returning("*").Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return newLabelTasks, nil
+}
+
 // DeleteByID implements AssetDataSource.
 func (a labelTaskDataSourceImpl) DeleteByID(ctx context.Context, id int) error {
 	panic("unimplemented")
@@ -49,8 +59,15 @@ func (a labelTaskDataSourceImpl) Insert(ctx context.Context, labelTask model.Ass
 }
 
 // UpdateByID implements AssetDataSource.
-func (a labelTaskDataSourceImpl) UpdateByID(ctx context.Context, id int, updateData map[string]interface{}) (*model.AssetLabelTask, error) {
-	panic("unimplemented")
+func (a labelTaskDataSourceImpl) UpdateByID(ctx context.Context, id int, updateData map[string]interface{}) error {
+	query := a.dbProvider.Instance.NewUpdate().
+		Model((*model.AssetLabelTask)(nil)).
+		Where("id = ?", id)
+
+	infras.BuildUpdateQueryByMap(query, updateData)
+
+	_, err := query.Exec(ctx)
+	return err
 }
 
 func NewLabelTaskDataSource(dbProvider *infras.DbProvider) LabelTaskDataSource {

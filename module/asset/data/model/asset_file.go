@@ -2,6 +2,7 @@ package model
 
 import (
 	"asset_management_backend/app_config"
+	"asset_management_backend/common/service"
 	app_utils "asset_management_backend/common/utils"
 	"asset_management_backend/module/asset/domain/entity"
 	"context"
@@ -23,7 +24,9 @@ type AssetFile struct {
 
 var _ bun.AfterDeleteHook = (*AssetFile)(nil)
 
-func (*AssetFile) AfterDelete(ctx context.Context, query *bun.DeleteQuery) error { return nil }
+func (f *AssetFile) AfterDelete(ctx context.Context, query *bun.DeleteQuery) error {
+	return service.NewFileStorageService().Delete(ctx, f.Path)
+}
 
 func AssetFilesFromPath(paths []string, assetID int) []AssetFile {
 	var assetFiles []AssetFile
@@ -50,8 +53,8 @@ func (f *AssetFile) ToEntity() entity.AssetFileEntity {
 func AssetFileModelsToEntities(assetFiles []AssetFile) []entity.AssetFileEntity {
 	var entities []entity.AssetFileEntity
 
-	for _, location := range assetFiles {
-		entities = append(entities, location.ToEntity())
+	for _, file := range assetFiles {
+		entities = append(entities, file.ToEntity())
 	}
 
 	return entities

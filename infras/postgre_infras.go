@@ -3,6 +3,7 @@ package infras
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -44,6 +45,12 @@ func initDb() {
 	dbProvider.Instance.AddQueryHook(&QueryHook{})
 
 	logger.Info("[PostgresInfras] init PostgresDB với Bun")
+}
+
+func BuildUpdateQueryByMap(query *bun.UpdateQuery, updateData map[string]interface{}) {
+	for key, value := range updateData {
+		query = query.Set(fmt.Sprintf("%s = ?", key), value)
+	}
 }
 
 type QueryHook struct{}

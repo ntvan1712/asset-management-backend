@@ -13,6 +13,21 @@ type AssetController struct {
 	assetUsecase usecase.AssetUsecase
 }
 
+func (a *AssetController) SearchByFilterHandler(c *fiber.Ctx) error {
+	var filterQuery entity.AssetFilterQuery
+	if err := c.QueryParser(&filterQuery); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(error_app.BadRequestErrorResponse(err.Error()))
+	}
+	if err := validator_app.ValidateStruct(filterQuery); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(err)
+	}
+	response, err := a.assetUsecase.SearchByFilter(c.Context(), filterQuery)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(error_app.InternalServerErrorResponse(err.Error()))
+	}
+	return c.JSON(response)
+}
+
 func (a *AssetController) GetAssetFilesPresignedUrlsHandler(c *fiber.Ctx) error {
 	var fileNames []string
 	if err := c.BodyParser(&fileNames); err != nil {
@@ -43,6 +58,24 @@ func (a *AssetController) CreateAssetHandler(c *fiber.Ctx) error {
 	return c.JSON(response)
 }
 
+func (a *AssetController) UpdateAssetHandler(c *fiber.Ctx) error {
+	assetID, err := c.ParamsInt("asset_id")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(error_app.BadRequestErrorResponse("Asset Id phải là số nguyên"))
+	}
+	var request *entity.UpdateAssetRequest
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(error_app.BadRequestErrorResponse(err.Error()))
+	}
+	if err := validator_app.ValidateStruct(request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(err)
+	}
+	response, err := a.assetUsecase.Update(c.Context(), assetID, *request)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(error_app.InternalServerErrorResponse(err.Error()))
+	}
+	return c.JSON(response)
+}
 func (a *AssetController) GetAssetByIDHandler(c *fiber.Ctx) error {
 	assetID, err := c.ParamsInt("asset_id")
 	if err != nil {

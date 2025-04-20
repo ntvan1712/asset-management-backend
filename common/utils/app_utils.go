@@ -3,6 +3,7 @@ package app_utils
 import (
 	"asset_management_backend/common/enums"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"strings"
 	"time"
@@ -81,7 +82,6 @@ func StandardizedFilename(filename string) string {
 	return re.ReplaceAllString(filename, "_")
 }
 
-
 // Hàm kiểm tra list strings có các phần tử duy nhất hay không
 func IsUniqueListStrings(list []string) bool {
 	seen := make(map[string]bool)
@@ -107,7 +107,6 @@ func UnixTimeNowUTCAtMillis() int64 {
 	return time.Now().UTC().UnixMilli()
 }
 
-
 func ChangeFileExtension(filename string, newExt string) string {
 	// Lấy extension hiện tại
 	oldExt := filepath.Ext(filename)
@@ -130,12 +129,12 @@ func FileNameWithoutExtension(filename string) string {
 }
 
 func IsElementOfSlice(slice []string, item string) bool {
-    for _, value := range slice {
-        if value == item {
-            return true
-        }
-    }
-    return false
+	for _, value := range slice {
+		if value == item {
+			return true
+		}
+	}
+	return false
 }
 
 func GetFileTypeByPath(filePath string) string {
@@ -144,8 +143,77 @@ func GetFileTypeByPath(filePath string) string {
 	if ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif" || ext == ".bmp" || ext == ".webp" {
 		return enums.FileTypeEnum.Image
 	} else if ext == ".mp4" || ext == ".avi" || ext == ".mkv" || ext == ".mov" || ext == ".flv" || ext == ".wmv" {
-		return  enums.FileTypeEnum.Video
+		return enums.FileTypeEnum.Video
 	}
 
 	return "unknown"
+}
+
+func GetUnixTimeFromSecs(unixTimeAtSecs int64) time.Time {
+	return time.Unix(unixTimeAtSecs, 0).UTC()
+}
+
+func GetUnixTimePtrFromSecs(unixTimeAtSecs int64) *time.Time {
+	value := GetUnixTimeFromSecs(unixTimeAtSecs)
+	return &value
+}
+
+func FormatStringPtr(value *string) *string {
+	if value != nil && *value != "" {
+		return value
+	}
+	return nil
+}
+
+func FormatIntPtr(value *int) *int {
+	if value != nil && *value != 0 {
+		return value
+	}
+	return nil
+}
+
+func FormatInt64Ptr(value *int64) *int64 {
+	if value != nil && *value != 0 {
+		return value
+	}
+	return nil
+}
+
+func FormatInt64ToUnixTimePtr(value *int64) *time.Time {
+	if value != nil && *value != 0 {
+		return GetUnixTimePtrFromSecs(*value)
+	}
+	return nil
+}
+
+func StructToUpdateMap(input interface{}) map[string]interface{} {
+	updateMap := make(map[string]interface{})
+
+	val := reflect.ValueOf(input)
+	typ := reflect.TypeOf(input)
+
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+		typ = typ.Elem()
+	}
+
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i)
+		fieldType := typ.Field(i)
+
+		if !field.CanInterface() {
+			continue
+		}
+
+		if field.Kind() == reflect.Ptr && !field.IsNil() {
+			jsonTag := fieldType.Tag.Get("json")
+			if jsonTag != "" && jsonTag != "-" {
+				// Cắt "omitempty" nếu có
+				name := strings.Split(jsonTag, ",")[0]
+				updateMap[name] = field.Elem().Interface()
+			}
+
+		}
+	}
+	return updateMap
 }

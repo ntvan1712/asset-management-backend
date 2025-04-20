@@ -36,10 +36,17 @@ func initFiberApp() {
 
 	fiberApp.Use(fiberLogger)
 	fiberApp.Use(cors.New(cors.Config{
-		AllowOrigins: "*", 
+		AllowOrigins: "*",
 		AllowHeaders: "*",
 		AllowMethods: "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
 	}))
 
 	logger.Info("[ServerInfras] Init Server fiber app")
+}
+
+func SetSSEHeader(c *fiber.Ctx) {
+	c.Set("Content-Type", "text/event-stream")
+	c.Set("Cache-Control", "no-cache")
+	c.Set("Connection", "keep-alive")
+	c.Set("Transfer-Encoding", "chunked")
 }

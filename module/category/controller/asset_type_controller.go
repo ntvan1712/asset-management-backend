@@ -2,6 +2,7 @@ package controller
 
 import (
 	"asset_management_backend/common/error_app"
+	app_utils "asset_management_backend/common/utils"
 	"asset_management_backend/common/validator_app"
 	"asset_management_backend/module/category/domain/entity"
 	"asset_management_backend/module/category/domain/usecase"
@@ -65,18 +66,8 @@ func (aq *AssetTypeController) UpdateHandler(c *fiber.Ctx) error {
 	if request.Name == nil && request.Description == nil && request.Code == nil {
 		return c.Status(fiber.StatusBadRequest).JSON(error_app.BadRequestErrorResponse("Vui lòng cung cấp thông tin cập nhật"))
 	}
-	updateData := map[string]interface{}{}
-	if request.Code != nil {
-		updateData["code"] = *request.Code
-	}
-	if request.Name != nil {
-		updateData["name"] = *request.Name
-	}
-	if request.Description != nil {
-		updateData["description"] = *request.Description
-	}
 
-	err = aq.categoryUsecase.UpdateAssetType(c.Context(), assetTypeID, updateData)
+	err = aq.categoryUsecase.UpdateAssetType(c.Context(), assetTypeID, app_utils.StructToUpdateMap(request))
 
 	if err != nil {
 		if err == error_app.ErrDocumentNotFound {

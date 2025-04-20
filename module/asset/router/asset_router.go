@@ -13,7 +13,9 @@ func Setup(app *fiber.App) {
 	assetRoute.Use(middleware.GetAuthMiddleware().AssetManagementAuthorityMiddleware)
 
 	assetController := controller.NewAssetController()
+	assetRoute.Get("/", assetController.SearchByFilterHandler)
 	assetRoute.Get("/:asset_id", assetController.GetAssetByIDHandler)
+	assetRoute.Put("/:asset_id", assetController.UpdateAssetHandler)
 	assetRoute.Post("/", assetController.CreateAssetHandler)
 	assetRoute.Post("/presigned-urls", assetController.GetAssetFilesPresignedUrlsHandler)
 }
