@@ -6,6 +6,8 @@ import (
 	"github.com/uptrace/bun"
 )
 
+const TableAssetQuality = "asset_qualities"
+
 type AssetQuality struct {
 	bun.BaseModel `bun:"table:asset_qualities"`
 

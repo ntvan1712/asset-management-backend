@@ -2,6 +2,7 @@ package controller
 
 import (
 	"asset_management_backend/common/error_app"
+	"asset_management_backend/common/middleware"
 	"asset_management_backend/common/validator_app"
 	"asset_management_backend/module/asset/domain/entity"
 	"asset_management_backend/module/asset/domain/usecase"
@@ -48,6 +49,11 @@ func (a *AssetController) CreateAssetHandler(c *fiber.Ctx) error {
 	if err := validator_app.ValidateStruct(request); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(err)
 	}
+	userID, ok := c.Context().UserValue(middleware.UserIdFieldName).(int)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(error_app.UnauthorizedErrorResponse("Invalid user ID"))
+	}
+	request.CreatorID = &userID
 	response, err := a.assetUsecase.CreateAsset(c.Context(), request)
 	if err != nil {
 		if err == error_app.ErrDuplicateKey {
@@ -70,6 +76,16 @@ func (a *AssetController) UpdateAssetHandler(c *fiber.Ctx) error {
 	if err := validator_app.ValidateStruct(request); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(err)
 	}
+	if request == nil || request.IsEmpty() {
+		return c.Status(fiber.StatusBadRequest).JSON(error_app.BadRequestErrorResponse("Không có sự thay đổi nào"))
+	}
+
+	userID, ok := c.Context().UserValue(middleware.UserIdFieldName).(int)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(error_app.UnauthorizedErrorResponse("Invalid user ID"))
+	}
+	request.CreatorID = &userID
+
 	response, err := a.assetUsecase.Update(c.Context(), assetID, *request)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(error_app.InternalServerErrorResponse(err.Error()))

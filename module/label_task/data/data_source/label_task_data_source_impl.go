@@ -60,8 +60,11 @@ func (a labelTaskDataSourceImpl) Insert(ctx context.Context, labelTask model.Ass
 
 // UpdateByID implements AssetDataSource.
 func (a labelTaskDataSourceImpl) UpdateByID(ctx context.Context, id int, updateData map[string]interface{}) error {
+	if len(updateData) == 0 {
+		return nil
+	}
 	query := a.dbProvider.Instance.NewUpdate().
-		Model((*model.AssetLabelTask)(nil)).
+		Table(model.TableAssetLabelTask).
 		Where("id = ?", id)
 
 	infras.BuildUpdateQueryByMap(query, updateData)

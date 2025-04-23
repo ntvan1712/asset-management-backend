@@ -8,6 +8,8 @@ import (
 	assetData "asset_management_backend/module/asset/data/data_source"
 	"asset_management_backend/module/asset/data/model"
 	"asset_management_backend/module/asset/domain/entity"
+	historyData "asset_management_backend/module/asset_history/data/data_source"
+	historyModel "asset_management_backend/module/asset_history/data/model"
 	labelTaskData "asset_management_backend/module/label_task/data/data_source"
 	"context"
 	"fmt"
@@ -20,9 +22,10 @@ import (
 )
 
 type assetRepositoryImpl struct {
-	assetDS      assetData.AssetDataSource
-	labelTaskDS  labelTaskData.LabelTaskDataSource
-	minioService *service.FileStorageService
+	assetDS        assetData.AssetDataSource
+	labelTaskDS    labelTaskData.LabelTaskDataSource
+	assetHistoryDS historyData.AssetHistoryDataSource
+	minioService   *service.FileStorageService
 }
 
 // Update implements AssetRepository.
@@ -43,7 +46,7 @@ func (a *assetRepositoryImpl) Update(ctx context.Context, assetID int, request e
 		if err == nil && newAssetPath != nil {
 			updateMap := map[string]interface{}{
 				"path":       *newAssetPath,
-				"created_at": time.Now(),
+				"created_at": time.Now().UTC(),
 			}
 			if err := a.assetDS.UpdateLabelImageByAssetID(ctx, assetID, updateMap); err != nil {
 				return err
@@ -62,6 +65,7 @@ func (a *assetRepositoryImpl) Update(ctx context.Context, assetID int, request e
 			return err
 		}
 	}
+	a.assetHistoryDS.Insert(context.Background(), historyModel.NewAssetUpdateHistory(assetID, request.CreatorID))
 
 	return nil
 }
@@ -116,7 +120,7 @@ func (a *assetRepositoryImpl) CreateAsset(ctx context.Context, request *entity.C
 	}
 	assetLabelImage, err := a.assetDS.InsertLabelImage(ctx, model.AssetLabelImage{
 		Path:      *request.AssetLabelPath,
-		CreatedAt: time.Now(),
+		CreatedAt: time.Now().UTC(),
 		AssetID:   assetModel.ID,
 	})
 	if err != nil {
@@ -129,6 +133,9 @@ func (a *assetRepositoryImpl) CreateAsset(ctx context.Context, request *entity.C
 	}
 	assetModel.AssetFiles = assetFiles
 	assetModel.AssetLabelImage = assetLabelImage
+
+	a.assetHistoryDS.Insert(context.Background(), historyModel.NewAssetCreationHistory(assetModel.ID, request.CreatorID))
+
 	return assetModel.ToEntity(), nil
 }
 
@@ -179,9 +186,11 @@ func (a *assetRepositoryImpl) CreateAssetFilesPresignedUrls(
 }
 
 func NewAssetRepository() AssetRepository {
+	dbProvider := infras.GetDbProvider()
 	return &assetRepositoryImpl{
-		assetDS:      assetData.NewAssetDataSource(infras.GetDbProvider()),
-		labelTaskDS:  labelTaskData.NewLabelTaskDataSource(infras.GetDbProvider()),
-		minioService: service.NewFileStorageService(),
+		assetDS:        assetData.NewAssetDataSource(dbProvider),
+		labelTaskDS:    labelTaskData.NewLabelTaskDataSource(dbProvider),
+		minioService:   service.NewFileStorageService(),
+		assetHistoryDS: historyData.NewAssetDataSource(dbProvider),
 	}
 }

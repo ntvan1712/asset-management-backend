@@ -53,8 +53,11 @@ func (ds *categoryDataSourceImpl) DeleteAssetTypeByID(ctx context.Context, id in
 }
 
 func (ds *categoryDataSourceImpl) UpdateAssetType(ctx context.Context, id int, updateData map[string]interface{}) error {
+	if len(updateData) == 0 {
+		return nil
+	}
 	query := ds.dbProvider.Instance.NewUpdate().
-		Model((*model.AssetType)(nil)).
+		Table(model.TableAssetType).
 		Where("id = ?", id)
 
 	infras.BuildUpdateQueryByMap(query, updateData)
@@ -86,8 +89,11 @@ func (ds *categoryDataSourceImpl) InsertAssetQuality(ctx context.Context, assetQ
 }
 
 func (ds *categoryDataSourceImpl) UpdateAssetQuality(ctx context.Context, id int, updateData map[string]interface{}) error {
+	if len(updateData) == 0 {
+		return nil
+	}
 	query := ds.dbProvider.Instance.NewUpdate().
-		Model((*model.AssetQuality)(nil)).
+		Table(model.TableAssetQuality).
 		Where("id = ?", id)
 
 	infras.BuildUpdateQueryByMap(query, updateData)
@@ -133,8 +139,11 @@ func (ds *categoryDataSourceImpl) InsertLocation(ctx context.Context, location *
 }
 
 func (ds *categoryDataSourceImpl) UpdateLocation(ctx context.Context, id int, updateData map[string]interface{}) error {
+	if len(updateData) == 0 {
+		return nil
+	}
 	query := ds.dbProvider.Instance.NewUpdate().
-		Model((*model.Location)(nil)).
+		Table(model.TableLocation).
 		Where("id = ?", id)
 
 	infras.BuildUpdateQueryByMap(query, updateData)
@@ -145,7 +154,7 @@ func (ds *categoryDataSourceImpl) UpdateLocation(ctx context.Context, id int, up
 
 func (ds *categoryDataSourceImpl) DeleteLocationByID(ctx context.Context, id int) error {
 	res, err := ds.dbProvider.Instance.NewDelete().
-		Model((*model.Location)(nil)).
+		Table(model.TableLocation).
 		Where("id = ?", id).
 		Exec(ctx)
 	if err != nil {

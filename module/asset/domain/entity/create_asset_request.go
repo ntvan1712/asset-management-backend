@@ -3,6 +3,7 @@ package entity
 import "time"
 
 type CreateAssetRequest struct {
+	CreatorID          *int       `json:"creator_id,omitempty"`
 	SerialNumber       *string    `json:"serial_number" validate:"omitempty"`
 	AssetLabelPath     *string    `json:"asset_label_path" validate:"omitempty"`
 	ModelNumber        *string    `json:"model_number" validate:"omitempty"`

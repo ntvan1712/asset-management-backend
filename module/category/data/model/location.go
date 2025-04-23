@@ -6,6 +6,8 @@ import (
 	"github.com/uptrace/bun"
 )
 
+const TableLocation = "locations"
+
 type Location struct {
 	bun.BaseModel `bun:"table:locations"`
 

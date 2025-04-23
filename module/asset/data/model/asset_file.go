@@ -34,7 +34,7 @@ func AssetFilesFromPath(paths []string, assetID int) []AssetFile {
 		assetFiles = append(assetFiles, AssetFile{
 			Path:      path,
 			FileType:  app_utils.GetFileTypeByPath(path),
-			CreatedAt: time.Now(),
+			CreatedAt: time.Now().UTC(),
 			AssetID:   assetID,
 		})
 	}

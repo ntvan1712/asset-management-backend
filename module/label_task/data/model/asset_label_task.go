@@ -8,6 +8,8 @@ import (
 	"github.com/uptrace/bun"
 )
 
+const TableAssetLabelTask = "asset_label_tasks"
+
 type AssetLabelTask struct {
 	bun.BaseModel `bun:"table:asset_label_tasks" json:"-"`
 
@@ -45,7 +47,7 @@ func (t *AssetLabelTask) ToEntity() *entity.AssetLabelTaskEntity {
 func NewAssetLabelTaskFromRequest(request entity.LabelTaskRequest, creatorID int) AssetLabelTask {
 	return AssetLabelTask{
 		Path:              request.LabelImagePath,
-		CreatedAt:         time.Now(),
+		CreatedAt:         time.Now().UTC(),
 		TaskType:          request.TaskType,
 		AssetLabelImageID: nil,
 		CreatorID:         &creatorID,

@@ -9,6 +9,8 @@ import (
 	"github.com/uptrace/bun"
 )
 
+const TableAssetLabelImage = "asset_label_images"
+
 type AssetLabelImage struct {
 	bun.BaseModel `bun:"table:asset_label_images"`
 

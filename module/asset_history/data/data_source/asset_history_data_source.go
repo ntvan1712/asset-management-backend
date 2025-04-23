@@ -6,8 +6,8 @@ import (
 )
 
 type AssetHistoryDataSource interface {
-	Insert(ctx context.Context, newHistory *model.AssetHistory) (*model.AssetHistory, error)
-	UpdateByID(ctx context.Context, historyID int, updateData map[string]interface{}) (*model.AssetHistory, error)
+	Insert(ctx context.Context, newHistory model.AssetHistory) (*model.AssetHistory, error)
+	UpdateByID(ctx context.Context, historyID int, updateData map[string]interface{}) error
 	DeleteByID(ctx context.Context, historyID int) error
 
 	FindByAssetID(

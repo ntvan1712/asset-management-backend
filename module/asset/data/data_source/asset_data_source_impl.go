@@ -33,8 +33,11 @@ func (a assetDataSourceImpl) GetSerialNumberByID(ctx context.Context, assetID in
 
 // UpdateLabelImageByAssetID implements AssetDataSource.
 func (a assetDataSourceImpl) UpdateLabelImageByAssetID(ctx context.Context, assetID int, updateData map[string]interface{}) error {
+	if len(updateData) == 0 {
+		return nil
+	}
 	query := a.dbProvider.Instance.NewUpdate().
-		Model(&model.AssetLabelImage{}).
+		Table(model.TableAssetLabelImage).
 		Where("asset_id = ?", assetID)
 
 	infras.BuildUpdateQueryByMap(query, updateData)
@@ -45,8 +48,11 @@ func (a assetDataSourceImpl) UpdateLabelImageByAssetID(ctx context.Context, asse
 
 // UpdateLabelImageByID implements AssetDataSource.
 func (a assetDataSourceImpl) UpdateLabelImageByID(ctx context.Context, id int, updateData map[string]interface{}) error {
+	if len(updateData) == 0 {
+		return nil
+	}
 	query := a.dbProvider.Instance.NewUpdate().
-		Model(&model.AssetLabelImage{}).
+		Table(model.TableAssetLabelImage).
 		Where("id = ?", id)
 
 	infras.BuildUpdateQueryByMap(query, updateData)
@@ -58,7 +64,7 @@ func (a assetDataSourceImpl) UpdateLabelImageByID(ctx context.Context, id int, u
 // DeleteAssetFilesByIDs implements AssetDataSource.
 func (a assetDataSourceImpl) DeleteAssetFilesByIDs(ctx context.Context, ids []int) error {
 	_, err := a.dbProvider.Instance.NewDelete().
-		Model(&model.AssetFile{}).
+		Table("asset_files").
 		Where("id IN (?)", bun.In(ids)).
 		Exec(ctx)
 	return err
@@ -166,7 +172,17 @@ func (a assetDataSourceImpl) Insert(ctx context.Context, newAsset model.Asset) (
 
 // UpdateByID implements AssetDataSource.
 func (a assetDataSourceImpl) UpdateByID(ctx context.Context, assetID int, updateData map[string]interface{}) error {
-	panic("unimplemented")
+	if len(updateData) == 0 {
+		return nil
+	}
+	query := a.dbProvider.Instance.NewUpdate().
+		Table(model.TableAsset).
+		Where("id = ?", assetID)
+
+	infras.BuildUpdateQueryByMap(query, updateData)
+
+	_, err := query.Exec(ctx)
+	return err
 }
 
 func NewAssetDataSource(dbProvider *infras.DbProvider) AssetDataSource {

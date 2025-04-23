@@ -6,6 +6,8 @@ import (
 	"github.com/uptrace/bun"
 )
 
+const TableAssetType = "asset_types"
+
 type AssetType struct {
 	bun.BaseModel `bun:"table:asset_types"`
 

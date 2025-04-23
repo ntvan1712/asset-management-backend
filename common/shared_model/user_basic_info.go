@@ -2,10 +2,9 @@ package sharedmodel
 
 import "github.com/uptrace/bun"
 
-
 type UserBasicInfo struct {
 	bun.BaseModel `bun:"table:users"`
-
-	Name string
-	Code string
+	ID            int    `bun:",pk,autoincrement" json:"id"`
+	Name          string `json:"name"`
+	Code          string `json:"code"`
 }
