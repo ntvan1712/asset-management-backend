@@ -31,6 +31,9 @@ type AssetHistory struct {
 }
 
 func (a *AssetHistory) ToEntity() *entity.AssetHistoryEntity {
+	if a == nil {
+		return nil
+	}
 	return &entity.AssetHistoryEntity{
 		ID:          a.ID,
 		Title:       a.Title,

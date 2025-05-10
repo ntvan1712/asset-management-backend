@@ -10,7 +10,6 @@ const (
 	unauthorizedErrCode   = "unauthorized-error"
 	internalServerErrCode = "internal-server-error"
 	badRequestErrCode     = "bad-request-error"
-	conflictErrCode       = "conflict-error"
 )
 
 func NewErrorResponse(errorCode string, message string) *ErrorResponse {
@@ -37,7 +36,7 @@ func InternalServerErrorResponse(message string) *ErrorResponse {
 }
 
 func ConflictErrorResponse(message string) *ErrorResponse {
-	return NewErrorResponse(conflictErrCode, message)
+	return NewErrorResponse(ErrConflict.Error(), message)
 }
 
 func PermissionDeniedErrorResponse(message string) *ErrorResponse {

@@ -13,19 +13,7 @@ type assetHistoryDataSourceImpl struct {
 
 // DeleteByID implements AssetHistoryDataSource.
 func (a assetHistoryDataSourceImpl) DeleteByID(ctx context.Context, historyID int) error {
-	res, err := a.dbProvider.Instance.NewDelete().
-		Table(model.TableAssetHistory).
-		Where("id = ?", historyID).
-		Exec(ctx)
-
-	if err != nil {
-		return err
-	}
-	rowsAffected, _ := res.RowsAffected()
-	if rowsAffected == 0 {
-		return error_app.ErrDocumentNotFound
-	}
-	return nil
+	return infras.DeleteByID(ctx, a.dbProvider.Instance, model.TableAssetHistory, historyID)
 }
 
 // FindByAssetID implements AssetHistoryDataSource.
@@ -68,11 +56,11 @@ func (a assetHistoryDataSourceImpl) UpdateByID(ctx context.Context, historyID in
 		return nil
 	}
 	query := a.dbProvider.Instance.NewUpdate().
-		Table(model.TableAssetHistory).
-		Where("id = ?", historyID)
+		Table(model.TableAssetHistory)
+		
 
 	infras.BuildUpdateQueryByMap(query, updateData)
-	_, err := query.Exec(ctx)
+	_, err := query.Where("id = ?", historyID).Exec(ctx)
 	return err
 }
 

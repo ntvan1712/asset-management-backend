@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	sharedmodel "asset_management_backend/common/shared_model"
 	"asset_management_backend/module/asset/data/model"
 	"context"
 )
@@ -24,4 +25,10 @@ type AssetDataSource interface {
 	InsertLabelImage(ctx context.Context, newLabelImage model.AssetLabelImage) (*model.AssetLabelImage, error)
 	UpdateLabelImageByID(ctx context.Context, id int, updateData map[string]interface{}) error
 	UpdateLabelImageByAssetID(ctx context.Context, assetID int, updateData map[string]interface{}) error
+
+	FindAssetByBorrowerID(
+		ctx context.Context,
+		borrowerID int,
+		paginateQuery sharedmodel.PaginateQuery,
+	) ([]model.Asset, error)
 }

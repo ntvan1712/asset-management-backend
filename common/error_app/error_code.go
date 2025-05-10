@@ -17,6 +17,7 @@ const (
 	createTempFileErrorCode     = "create-temp-file-error"
 	bodyExceedsLimitErrCode     = "body-exceeds-limit-error"
 	unknownErrCode              = "unknown-error"
+	conflictErrCode             = "conflict-error"
 )
 
 var ErrBadRequest = errors.New(badRequestErrCode)
@@ -33,3 +34,4 @@ var ErrUserNotFound = errors.New(userNotFoundErrorCode)
 var ErrCreateTempFile = errors.New(createTempFileErrorCode)
 var ErrBodyExceedsLimit = errors.New(bodyExceedsLimitErrCode)
 var ErrUnknown = errors.New(unknownErrCode)
+var ErrConflict = errors.New(conflictErrCode)

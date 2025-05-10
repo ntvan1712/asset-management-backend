@@ -41,7 +41,7 @@ func AssetFilesFromPath(paths []string, assetID int) []AssetFile {
 	return assetFiles
 }
 
-func (f *AssetFile) ToEntity() entity.AssetFileEntity {
+func (f AssetFile) ToEntity() entity.AssetFileEntity {
 	return entity.AssetFileEntity{
 		ID:        f.ID,
 		FileType:  f.FileType,

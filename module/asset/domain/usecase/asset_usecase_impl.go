@@ -3,6 +3,7 @@ package usecase
 import (
 	"asset_management_backend/common/logger"
 	"asset_management_backend/common/service"
+	sharedmodel "asset_management_backend/common/shared_model"
 	"asset_management_backend/module/asset/data/repository"
 	"asset_management_backend/module/asset/domain/entity"
 	"context"
@@ -10,6 +11,11 @@ import (
 
 type assetUsecaseImpl struct {
 	assetRepo repository.AssetRepository
+}
+
+// GetMyBorrowedAssets implements AssetUsecase.
+func (a *assetUsecaseImpl) GetMyBorrowedAssets(ctx context.Context, borrowerID int, paginateQuery sharedmodel.PaginateQuery) ([]entity.AssetEntity, error) {
+	return a.assetRepo.FindAssetByBorrowerID(ctx, borrowerID, paginateQuery)
 }
 
 // Update implements AssetUsecase.

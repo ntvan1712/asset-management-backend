@@ -3,6 +3,7 @@ package controller
 import (
 	"asset_management_backend/common/error_app"
 	"asset_management_backend/common/middleware"
+	sharedmodel "asset_management_backend/common/shared_model"
 	"asset_management_backend/common/validator_app"
 	"asset_management_backend/module/asset/domain/entity"
 	"asset_management_backend/module/asset/domain/usecase"
@@ -59,6 +60,22 @@ func (a *AssetController) CreateAssetHandler(c *fiber.Ctx) error {
 		if err == error_app.ErrDuplicateKey {
 			return c.Status(fiber.StatusConflict).JSON(error_app.ConflictErrorResponse("Serial number đã tồn tại"))
 		}
+		return c.Status(fiber.StatusInternalServerError).JSON(error_app.InternalServerErrorResponse(err.Error()))
+	}
+	return c.JSON(response)
+}
+
+func (a *AssetController) GetMyBorrowedAssetsHandler(c *fiber.Ctx) error {
+	paginateQuery, err := sharedmodel.GetPaginateQuery(c)
+	if err != nil {
+		return err
+	}
+	userID, ok := c.Context().UserValue(middleware.UserIdFieldName).(int)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(error_app.UnauthorizedErrorResponse("Invalid user ID"))
+	}
+	response, err := a.assetUsecase.GetMyBorrowedAssets(c.Context(), userID, *paginateQuery)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(error_app.InternalServerErrorResponse(err.Error()))
 	}
 	return c.JSON(response)

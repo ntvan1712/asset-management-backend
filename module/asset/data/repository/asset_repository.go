@@ -2,6 +2,7 @@ package repository
 
 import (
 	"asset_management_backend/common/service"
+	sharedmodel "asset_management_backend/common/shared_model"
 	"asset_management_backend/module/asset/domain/entity"
 	"context"
 )
@@ -24,4 +25,5 @@ type AssetRepository interface {
 	) ([]entity.AssetEntity, error)
 
 	Update(ctx context.Context, assetID int, request entity.UpdateAssetRequest) error
+	FindAssetByBorrowerID(ctx context.Context, borrowerID int, paginateQuery sharedmodel.PaginateQuery) ([]entity.AssetEntity, error)
 }

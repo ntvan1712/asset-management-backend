@@ -29,6 +29,9 @@ type AssetLabelTask struct {
 }
 
 func (t *AssetLabelTask) ToEntity() *entity.AssetLabelTaskEntity {
+	if t == nil {
+		return nil
+	}
 	return &entity.AssetLabelTaskEntity{
 		ID:           t.ID,
 		Url:          app_config.GetAppConfig().MinioConfig.GetFullAssetUrl(t.Path),

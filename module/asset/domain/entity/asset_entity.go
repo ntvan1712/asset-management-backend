@@ -1,6 +1,7 @@
 package entity
 
 import (
+	borrowedAssetE "asset_management_backend/module/borrowed_asset/domain/entity"
 	categoryEntity "asset_management_backend/module/category/domain/entity"
 	"time"
 )
@@ -24,6 +25,7 @@ type AssetEntity struct {
 	AssetQuality *categoryEntity.AssetQualityEntity `json:"asset_quality,omitempty"`
 	AssetType    *categoryEntity.AssetTypeEntity    `json:"asset_type,omitempty"`
 
-	AssetFiles      []AssetFileEntity      `json:"asset_files,omitempty"`
-	AssetLabelImage *AssetLabelImageEntity `json:"asset_label_image,omitempty"`
+	AssetFiles      []AssetFileEntity           `json:"asset_files,omitempty"`
+	AssetLabelImage *AssetLabelImageEntity      `json:"asset_label_image,omitempty"`
+	BorrowedAsset   *borrowedAssetE.BorrowedAssetEntity `json:"borrowed_asset,omitempty"`
 }

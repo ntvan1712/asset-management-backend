@@ -107,6 +107,11 @@ func UnixTimeNowUTCAtMillis() int64 {
 	return time.Now().UTC().UnixMilli()
 }
 
+func TimeNowPtr() *time.Time {
+	now := time.Now().UTC()
+	return &now
+}
+
 func ChangeFileExtension(filename string, newExt string) string {
 	// Lấy extension hiện tại
 	oldExt := filepath.Ext(filename)

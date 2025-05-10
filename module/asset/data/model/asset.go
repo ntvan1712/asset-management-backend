@@ -3,6 +3,7 @@ package model
 import (
 	"asset_management_backend/common/enums"
 	"asset_management_backend/module/asset/domain/entity"
+	borrowedAssetM "asset_management_backend/module/borrowed_asset/data/model"
 	categoryModel "asset_management_backend/module/category/data/model"
 	"context"
 	"strings"
@@ -39,8 +40,9 @@ type Asset struct {
 	AssetQuality categoryModel.AssetQuality `bun:"rel:belongs-to,join:asset_quality_id=id"`
 	AssetType    categoryModel.AssetType    `bun:"rel:belongs-to,join:asset_type_id=id"`
 
-	AssetFiles      []AssetFile      `bun:"rel:has-many,join:id=asset_id"`
-	AssetLabelImage *AssetLabelImage `bun:"rel:has-one,join:id=asset_id"`
+	AssetFiles      []AssetFile                   `bun:"rel:has-many,join:id=asset_id"`
+	AssetLabelImage *AssetLabelImage              `bun:"rel:has-one,join:id=asset_id"`
+	BorrowedAsset   *borrowedAssetM.BorrowedAsset `bun:"rel:has-one,join:id=asset_id"`
 }
 
 func LoadAllAssetRelationQuery(selectModelQuery *bun.SelectQuery) {
@@ -49,7 +51,10 @@ func LoadAllAssetRelationQuery(selectModelQuery *bun.SelectQuery) {
 		Relation("AssetQuality").
 		Relation("AssetType").
 		Relation("AssetFiles").
-		Relation("AssetLabelImage")
+		Relation("AssetLabelImage").
+		Relation("BorrowedAsset").
+		Relation("BorrowedAsset.Borrower").
+		Relation("BorrowedAsset.Acceptor")
 }
 
 func NewAssetModelFromRequest(request *entity.CreateAssetRequest) Asset {
@@ -72,11 +77,14 @@ func NewAssetModelFromRequest(request *entity.CreateAssetRequest) Asset {
 		LocationID:         request.LocationId,
 		AssetQualityID:     request.AssetQualityId,
 		AssetTypeID:        request.AssetTypeId,
-		AddedAt: &addedAt,
+		AddedAt:            &addedAt,
 	}
 }
 
 func (a *Asset) ToEntity() *entity.AssetEntity {
+	if a == nil {
+		return nil
+	}
 	var assetFiles []entity.AssetFileEntity
 	if a.AssetFiles != nil {
 		assetFiles = AssetFileModelsToEntities(a.AssetFiles)
@@ -100,6 +108,7 @@ func (a *Asset) ToEntity() *entity.AssetEntity {
 		AssetType:          a.AssetType.ToEntity(),
 		AssetFiles:         assetFiles,
 		AssetLabelImage:    a.AssetLabelImage.ToEntity(),
+		BorrowedAsset:      a.BorrowedAsset.ToEntity(),
 	}
 }
 
@@ -112,7 +121,6 @@ func AssetModelsToEntities(assetModels []Asset) []entity.AssetEntity {
 
 	return entities
 }
-
 
 var _ bun.AfterDeleteHook = (*Asset)(nil)
 

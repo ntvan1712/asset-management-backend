@@ -3,6 +3,7 @@ package repository
 import (
 	"asset_management_backend/common/logger"
 	"asset_management_backend/common/service"
+	sharedmodel "asset_management_backend/common/shared_model"
 	app_utils "asset_management_backend/common/utils"
 	"asset_management_backend/infras"
 	assetData "asset_management_backend/module/asset/data/data_source"
@@ -26,6 +27,15 @@ type assetRepositoryImpl struct {
 	labelTaskDS    labelTaskData.LabelTaskDataSource
 	assetHistoryDS historyData.AssetHistoryDataSource
 	minioService   *service.FileStorageService
+}
+
+// FindAssetByBorrowerID implements AssetRepository.
+func (a *assetRepositoryImpl) FindAssetByBorrowerID(ctx context.Context, borrowerID int,paginateQuery sharedmodel.PaginateQuery) ([]entity.AssetEntity, error) {
+	assets, err := a.assetDS.FindAssetByBorrowerID(ctx, borrowerID, paginateQuery)
+	if err != nil {
+		return nil, err
+	}
+	return model.AssetModelsToEntities(assets), nil
 }
 
 // Update implements AssetRepository.

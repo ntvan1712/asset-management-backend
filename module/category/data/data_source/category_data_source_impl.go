@@ -1,7 +1,6 @@
 package datasource
 
 import (
-	"asset_management_backend/common/error_app"
 	"asset_management_backend/infras"
 	"asset_management_backend/module/category/data/model"
 	"context"
@@ -38,18 +37,7 @@ func (ds *categoryDataSourceImpl) FindAllAssetTypes(ctx context.Context) ([]mode
 }
 
 func (ds *categoryDataSourceImpl) DeleteAssetTypeByID(ctx context.Context, id int) error {
-	res, err := ds.dbProvider.Instance.NewDelete().
-		Model((*model.AssetType)(nil)).
-		Where("id = ?", id).
-		Exec(ctx)
-	if err != nil {
-		return err
-	}
-	rowsAffected, _ := res.RowsAffected()
-	if rowsAffected == 0 {
-		return error_app.ErrDocumentNotFound
-	}
-	return nil
+	return infras.DeleteByID(ctx, ds.dbProvider.Instance, model.TableAssetType, id)
 }
 
 func (ds *categoryDataSourceImpl) UpdateAssetType(ctx context.Context, id int, updateData map[string]interface{}) error {
@@ -57,12 +45,11 @@ func (ds *categoryDataSourceImpl) UpdateAssetType(ctx context.Context, id int, u
 		return nil
 	}
 	query := ds.dbProvider.Instance.NewUpdate().
-		Table(model.TableAssetType).
-		Where("id = ?", id)
+		Table(model.TableAssetType)
 
 	infras.BuildUpdateQueryByMap(query, updateData)
 
-	_, err := query.Exec(ctx)
+	_, err := query.Where("id = ?", id).Exec(ctx)
 	return err
 }
 
@@ -93,28 +80,17 @@ func (ds *categoryDataSourceImpl) UpdateAssetQuality(ctx context.Context, id int
 		return nil
 	}
 	query := ds.dbProvider.Instance.NewUpdate().
-		Table(model.TableAssetQuality).
-		Where("id = ?", id)
+		Table(model.TableAssetQuality)
+		
 
 	infras.BuildUpdateQueryByMap(query, updateData)
 
-	_, err := query.Exec(ctx)
+	_, err := query.Where("id = ?", id).Exec(ctx)
 	return err
 }
 
 func (ds *categoryDataSourceImpl) DeleteAssetQualityByID(ctx context.Context, id int) error {
-	res, err := ds.dbProvider.Instance.NewDelete().
-		Model((*model.AssetQuality)(nil)).
-		Where("id = ?", id).
-		Exec(ctx)
-	if err != nil {
-		return err
-	}
-	rowsAffected, _ := res.RowsAffected()
-	if rowsAffected == 0 {
-		return error_app.ErrDocumentNotFound
-	}
-	return nil
+	return infras.DeleteByID(ctx, ds.dbProvider.Instance, model.TableAssetQuality, id)
 }
 
 // Currency methods
@@ -143,28 +119,17 @@ func (ds *categoryDataSourceImpl) UpdateLocation(ctx context.Context, id int, up
 		return nil
 	}
 	query := ds.dbProvider.Instance.NewUpdate().
-		Table(model.TableLocation).
-		Where("id = ?", id)
+		Table(model.TableLocation)
+		
 
 	infras.BuildUpdateQueryByMap(query, updateData)
 
-	_, err := query.Exec(ctx)
+	_, err := query.Where("id = ?", id).Exec(ctx)
 	return err
 }
 
 func (ds *categoryDataSourceImpl) DeleteLocationByID(ctx context.Context, id int) error {
-	res, err := ds.dbProvider.Instance.NewDelete().
-		Table(model.TableLocation).
-		Where("id = ?", id).
-		Exec(ctx)
-	if err != nil {
-		return err
-	}
-	rowsAffected, _ := res.RowsAffected()
-	if rowsAffected == 0 {
-		return error_app.ErrDocumentNotFound
-	}
-	return nil
+	return infras.DeleteByID(ctx, ds.dbProvider.Instance, model.TableLocation, id)
 }
 
 func NewCategoryDataSource(dbProvider *infras.DbProvider) *categoryDataSourceImpl {

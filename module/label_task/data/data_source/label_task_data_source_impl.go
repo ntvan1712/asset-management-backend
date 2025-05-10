@@ -64,12 +64,12 @@ func (a labelTaskDataSourceImpl) UpdateByID(ctx context.Context, id int, updateD
 		return nil
 	}
 	query := a.dbProvider.Instance.NewUpdate().
-		Table(model.TableAssetLabelTask).
-		Where("id = ?", id)
+		Table(model.TableAssetLabelTask)
+		
 
 	infras.BuildUpdateQueryByMap(query, updateData)
 
-	_, err := query.Exec(ctx)
+	_, err := query.Where("id = ?", id).Exec(ctx)
 	return err
 }
 

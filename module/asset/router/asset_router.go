@@ -10,9 +10,13 @@ import (
 func Setup(app *fiber.App) {
 
 	assetRoute := app.Group("/api/assets")
-	assetRoute.Use(middleware.GetAuthMiddleware().AssetManagementAuthorityMiddleware)
-
 	assetController := controller.NewAssetController()
+	// Employee
+	employeeAuth := middleware.GetAuthMiddleware().EmployeeAuthorityMiddleware
+	assetRoute.Get("/borrowed/", employeeAuth, assetController.GetMyBorrowedAssetsHandler)
+	
+	// Manager
+	assetRoute.Use(middleware.GetAuthMiddleware().AssetManagementAuthorityMiddleware)
 	assetRoute.Get("/", assetController.SearchByFilterHandler)
 	assetRoute.Get("/:asset_id", assetController.GetAssetByIDHandler)
 	assetRoute.Put("/:asset_id", assetController.UpdateAssetHandler)

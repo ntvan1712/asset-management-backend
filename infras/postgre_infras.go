@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"asset_management_backend/app_config"
+	"asset_management_backend/common/error_app"
 	"asset_management_backend/common/logger"
 
 	"github.com/uptrace/bun"
@@ -51,6 +52,21 @@ func BuildUpdateQueryByMap(query *bun.UpdateQuery, updateData map[string]interfa
 	for key, value := range updateData {
 		query = query.Set(fmt.Sprintf("%s = ?", key), value)
 	}
+}
+
+func DeleteByID(ctx context.Context, db *bun.DB, tableName string, id int) error {
+	res, err := db.NewDelete().
+		Table(tableName).
+		Where("id = ?", id).
+		Exec(ctx)
+	if err != nil {
+		return err
+	}
+	rowsAffected, _ := res.RowsAffected()
+	if rowsAffected == 0 {
+		return error_app.ErrDocumentNotFound
+	}
+	return nil
 }
 
 type QueryHook struct{}
