@@ -8,8 +8,10 @@ import (
 	assetRouter "asset_management_backend/module/asset/router"
 	historyRouter "asset_management_backend/module/asset_history/router"
 	borrowRouter "asset_management_backend/module/borrow/router"
+	borrowedAssetRouter "asset_management_backend/module/borrowed_asset/router"
 	categoryRouter "asset_management_backend/module/category/router"
 	labelTaskRouter "asset_management_backend/module/label_task/router"
+	statisticRouter "asset_management_backend/module/statistic/router"
 	transferRouter "asset_management_backend/module/transfer/router"
 	"log"
 )
@@ -38,6 +40,8 @@ func main() {
 	historyRouter.Setup(fiberApp)
 	borrowRouter.Setup(fiberApp)
 	transferRouter.Setup(fiberApp)
+	borrowedAssetRouter.Setup(fiberApp)
+	statisticRouter.Setup(fiberApp)
 
 	fiberAppErr := fiberApp.Listen(app_config.GetAppConfig().FiberServerConfig.HttpPort)
 	if fiberAppErr != nil {

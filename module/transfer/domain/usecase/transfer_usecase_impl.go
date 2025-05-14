@@ -11,6 +11,11 @@ type transferUsecaseImpl struct {
 	transferRepo repository.TransferRepository
 }
 
+// Create implements TransferUsecase.
+func (t *transferUsecaseImpl) Create(ctx context.Context, newRequest entity.CreateTransferRequestEntity) (*entity.TransferRequestEntity, error) {
+	return t.transferRepo.Insert(ctx, newRequest)
+}
+
 // CancelTransferRequest implements TransferUsecase.
 func (t *transferUsecaseImpl) CancelTransferRequest(ctx context.Context, requestID int, requestorID int) error {
 	return t.transferRepo.CancelTransferRequest(ctx, requestID, requestorID)

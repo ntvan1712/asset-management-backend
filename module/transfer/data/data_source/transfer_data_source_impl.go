@@ -21,10 +21,10 @@ type transferDataSourceImpl struct {
 }
 
 // CancelTransferRequest implements TransferDataSource.
-func (t transferDataSourceImpl) CancelTransferRequest(ctx context.Context, requestID int, requestorID int) error {
+func (t transferDataSourceImpl) CancelTransferRequest(ctx context.Context, requestID int, requestorID int) (*transferM.TransferRequest, error) {
 	tx, err := t.dbProvider.Instance.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback() // rollback nếu có lỗi
 
@@ -36,11 +36,11 @@ func (t transferDataSourceImpl) CancelTransferRequest(ctx context.Context, reque
 		Returning("*").
 		Exec(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// Cập nhật trạng thái asset
 	if err := updateAssetStatus(ctx, tx, enums.AssetStatusEnum.Available, transferRequest.AssetID); err != nil {
-		return err
+		return nil, err
 	}
 
 	// Cập nhật trạng thái yêu cầu mượn
@@ -58,11 +58,15 @@ func (t transferDataSourceImpl) CancelTransferRequest(ctx context.Context, reque
 		infras.BuildUpdateQueryByMap(query, updateMap)
 
 		if _, err := query.Where("id = ?", transferRequest.FromBorrowRequestID).Exec(ctx); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return &transferRequest, nil
 }
 
 // ApproveTransferRequest implements TransferDataSource.
@@ -71,10 +75,10 @@ func (t transferDataSourceImpl) ApproveTransferRequest(
 	requestID int,
 	respondentID int,
 	responseDescription *string,
-) error {
+) (*transferM.TransferRequest, error) {
 	tx, err := t.dbProvider.Instance.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback() // rollback nếu có lỗi
 
@@ -89,12 +93,12 @@ func (t transferDataSourceImpl) ApproveTransferRequest(
 	query := tx.NewUpdate().Model(&transferRequest)
 	infras.BuildUpdateQueryByMap(query, updateMap)
 	if _, err := query.Where("id = ?", requestID).Returning("*").Exec(ctx); err != nil {
-		return err
+		return nil, err
 	}
 
 	// Cập nhật trạng thái asset thành đã cho mượn
 	if err := updateAssetStatus(ctx, tx, enums.AssetStatusEnum.OnBorrow, transferRequest.AssetID); err != nil {
-		return err
+		return nil, err
 	}
 
 	//Insert new borrowed asset
@@ -112,10 +116,14 @@ func (t transferDataSourceImpl) ApproveTransferRequest(
 		Model(transfer).
 		Exec(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return &transferRequest, nil
 }
 
 // RejectTransferRequest implements TransferDataSource.
@@ -124,10 +132,10 @@ func (t transferDataSourceImpl) RejectTransferRequest(
 	requestID int,
 	respondentID int,
 	responseDescription *string,
-) error {
+) (*transferM.TransferRequest, error) {
 	tx, err := t.dbProvider.Instance.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback() // rollback nếu có lỗi
 
@@ -138,21 +146,24 @@ func (t transferDataSourceImpl) RejectTransferRequest(
 		"response_at":          time.Now(),
 		"response_description": responseDescription,
 	}
-	var assetID int
-	query := tx.NewUpdate().
-		Table(transferM.TableTransferRequest)
 
+	var transferRequest transferM.TransferRequest
+	query := tx.NewUpdate().Model(&transferRequest)
 	infras.BuildUpdateQueryByMap(query, updateMap)
-	if err := query.Where("id = ?", requestID).Returning("asset_id").Scan(ctx, &assetID); err != nil {
-		return err
+	if _, err := query.Where("id = ?", requestID).Returning("*").Exec(ctx); err != nil {
+		return nil, err
 	}
 
 	// Cập nhật trạng thái asset thành có thể cho mượn
-	if err := updateAssetStatus(ctx, tx, enums.AssetStatusEnum.Available, assetID); err != nil {
-		return err
+	if err := updateAssetStatus(ctx, tx, enums.AssetStatusEnum.Available, transferRequest.AssetID); err != nil {
+		return nil, err
 	}
 
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return &transferRequest, nil
 }
 
 // DeleteByID implements TransferDataSource.

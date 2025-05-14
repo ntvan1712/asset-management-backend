@@ -22,5 +22,6 @@ func Setup(app *fiber.App) {
 	managerTransferRoute := app.Group("/api/transfer-requests/managed/")
 	managerTransferRoute.Use(middleware.GetAuthMiddleware().BorrowManagementAuthorityMiddleware)
 	managerTransferRoute.Get("/", transferController.GetAllHandler)
+	managerTransferRoute.Post("/", transferController.CreateHandler)
 	managerTransferRoute.Delete("/:request_id/", transferController.CancelTransferRequestHandler)
 }

@@ -33,18 +33,18 @@ type TransferDataSource interface {
 		requestID int,
 		respondentID int,
 		responseDescription *string,
-	) error
+	) (*model.TransferRequest, error)
 
 	ApproveTransferRequest(
 		ctx context.Context,
 		requestID int,
 		respondentID int,
 		responseDescription *string,
-	) error
+	) (*model.TransferRequest, error)
 
 	CancelTransferRequest(
 		ctx context.Context,
 		requestID int,
 		requestorID int,
-	) error
+	) (*model.TransferRequest, error)
 }

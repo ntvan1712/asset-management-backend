@@ -7,7 +7,7 @@ import (
 )
 
 type TransferUsecase interface {
-	// Insert(ctx context.Context, newRequest model.TransferRequest) (*model.TransferRequest, error)
+	Create(ctx context.Context, newRequest entity.CreateTransferRequestEntity) (*entity.TransferRequestEntity, error)
 	UpdateByID(ctx context.Context, requestID int, updateData map[string]interface{}) error
 	DeleteByID(
 		ctx context.Context,

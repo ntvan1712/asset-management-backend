@@ -71,6 +71,71 @@ func NewAssetCreationHistory(assetID int, creatorID *int) AssetHistory {
 	}
 }
 
+func NewReturnHistory(assetID int, creatorID *int, borrowerID *int) AssetHistory {
+	contentValue := "Tài sản được trả"
+	return AssetHistory{
+		Title:       "Trả tài sản",
+		Content:     &contentValue,
+		CreatedAt:   time.Now().UTC(),
+		HistoryType: enums.AssetHistoryType.Return,
+		AssetID:     assetID,
+		CreatorID:   creatorID,
+		BorrowerID:  borrowerID,
+	}
+}
+
+func NewTransferHistory(assetID int, creatorID *int) AssetHistory {
+	contentValue := "Tài sản được luân chuyển"
+	return AssetHistory{
+		Title:       "Luân chuyển",
+		Content:     &contentValue,
+		CreatedAt:   time.Now().UTC(),
+		HistoryType: enums.AssetHistoryType.Transfer,
+		AssetID:     assetID,
+		CreatorID:   creatorID,
+		BorrowerID:  nil,
+	}
+}
+
+func NewCancelTransferHistory(assetID int, creatorID *int) AssetHistory {
+	contentValue := "Hủy yêu cầu luân chuyển"
+	return AssetHistory{
+		Title:       "Hủy luân chuyển",
+		Content:     &contentValue,
+		CreatedAt:   time.Now().UTC(),
+		HistoryType: enums.AssetHistoryType.CancelTransfer,
+		AssetID:     assetID,
+		CreatorID:   creatorID,
+		BorrowerID:  nil,
+	}
+}
+
+func NewRejectTransferHistory(assetID int, creatorID *int) AssetHistory {
+	contentValue := "Từ chối yêu cầu luân chuyển"
+	return AssetHistory{
+		Title:       "Từ chối luân chuyển",
+		Content:     &contentValue,
+		CreatedAt:   time.Now().UTC(),
+		HistoryType: enums.AssetHistoryType.RejectTransfer,
+		AssetID:     assetID,
+		CreatorID:   creatorID,
+		BorrowerID:  nil,
+	}
+}
+
+func NewOnBorrowHistory(assetID int, borrowID int) AssetHistory {
+	contentValue := "Mượn tài sản"
+	return AssetHistory{
+		Title:       "Mượn",
+		Content:     &contentValue,
+		CreatedAt:   time.Now().UTC(),
+		HistoryType: enums.AssetHistoryType.OnBorrow,
+		AssetID:     assetID,
+		CreatorID:   nil,
+		BorrowerID:  &borrowID,
+	}
+}
+
 func NewAssetUpdateHistory(assetID int, creatorID *int) AssetHistory {
 	contentValue := "Tài sản được cập nhật"
 	return AssetHistory{

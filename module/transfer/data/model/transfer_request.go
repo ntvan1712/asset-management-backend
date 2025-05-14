@@ -1,7 +1,9 @@
 package model
 
 import (
+	"asset_management_backend/common/enums"
 	sharedmodel "asset_management_backend/common/shared_model"
+	app_utils "asset_management_backend/common/utils"
 	assetModel "asset_management_backend/module/asset/data/model"
 	categoryModel "asset_management_backend/module/category/data/model"
 	"asset_management_backend/module/transfer/domain/entity"
@@ -56,6 +58,22 @@ func (transfer *TransferRequest) ToEntity() *entity.TransferRequestEntity {
 		Asset:               transfer.Asset.ToEntity(),
 		Respondent:          transfer.Respondent,
 		FromBorrowRequestID: transfer.FromBorrowRequestID,
+	}
+}
+
+func NewTransferRequestFromBody(body entity.CreateTransferRequestEntity) TransferRequest {
+	return TransferRequest{
+		RequestAt:           app_utils.TimeNowPtr(),
+		ReturnDate:          body.ReturnDate,
+		Reason:              body.Reason,
+		Status:              enums.TransferRequestEnum.Pending,
+		ResponseAt:          nil,
+		ResponseDescription: nil,
+		RequestorID:         *body.RequestorID,
+		UseAtLocationID:     body.UseAtLocationID,
+		AssetID:             body.AssetID,
+		RespondentID:        &body.RespondentID,
+		FromBorrowRequestID: nil,
 	}
 }
 

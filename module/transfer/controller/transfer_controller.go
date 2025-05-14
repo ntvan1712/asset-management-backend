@@ -5,6 +5,7 @@ import (
 	"asset_management_backend/common/middleware"
 	sharedmodel "asset_management_backend/common/shared_model"
 	"asset_management_backend/common/validator_app"
+	"asset_management_backend/module/transfer/domain/entity"
 	"asset_management_backend/module/transfer/domain/usecase"
 
 	"github.com/gofiber/fiber/v2"
@@ -73,6 +74,34 @@ func (t *TransferController) ApproveTransferRequestHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(error_app.InternalServerErrorResponse(err.Error()))
 	}
 	return c.SendString("Approve success")
+}
+
+func (t *TransferController) CreateHandler(c *fiber.Ctx) error {
+
+	var body entity.CreateTransferRequestEntity
+
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(error_app.BadRequestErrorResponse(err.Error()))
+	}
+	if err := validator_app.ValidateStruct(body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(err)
+	}
+
+	userID, ok := c.Context().UserValue(middleware.UserIdFieldName).(int)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(error_app.UnauthorizedErrorResponse("Invalid user ID"))
+	}
+
+	body.RequestorID = &userID
+
+	request, err := t.transferUsecase.Create(c.Context(), body)
+	if err != nil {
+		if err == error_app.ErrDocumentNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(error_app.NotFoundErrorResponse("Yêu cầu không tồn tại hoặc đã bị hủy"))
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(error_app.InternalServerErrorResponse(err.Error()))
+	}
+	return c.JSON(request)
 }
 
 func (t *TransferController) RejectTransferRequestHandler(c *fiber.Ctx) error {
